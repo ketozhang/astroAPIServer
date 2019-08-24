@@ -1,0 +1,15 @@
+from pathlib import Path
+import json
+import yaml
+
+PROJECT_PATH = Path(__file__).resolve().parents[1]
+
+with open(PROJECT_PATH / "config.yml") as f:
+    CONFIG = yaml.safe_load(f)
+
+with open(PROJECT_PATH / 'env.json') as f:
+    ENV = json.load(f)
+
+JWT_SECRET = ENV["JWT_SECRET"]
+JWT_ALGORITHM = "HS256"
+JWT_EXP = 60

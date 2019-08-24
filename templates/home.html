@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block content %}
+Current User: {{ username }}
+<br>
+<form action="/login" method="post">
+    <input type="text" name="username", placeholder="username">
+    <br>
+    <input type="password" name="password" placeholder="password">
+    <br>
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+    <input type="submit" value="Submit">
+</form>
+{% endblock %}
