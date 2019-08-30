@@ -1,3 +1,5 @@
+*.vscode/
+
 env.json
 Pipefile.lock
 *.code-workspace

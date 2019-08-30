@@ -1,2 +1,2 @@
 local:
-	pipenv run python test/app.py
+	pipenv run python test/serve.py

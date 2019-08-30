@@ -1,6 +1,16 @@
 {% extends "base.html" %}
 {% block content %}
+
+{% if username %}
 Current User: {{ username }}
+<br>
+<form action="/logout" method="post">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+    <input type="submit" value="Logout">
+</form>
+
+{% else %}
+Current User: N/A
 <br>
 <form action="/login" method="post">
     <input type="text" name="username", placeholder="username">
@@ -8,6 +18,8 @@ Current User: {{ username }}
     <input type="password" name="password" placeholder="password">
     <br>
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
-    <input type="submit" value="Submit">
+    <input type="submit" value="Login">
 </form>
+{% endif %}
+
 {% endblock %}
