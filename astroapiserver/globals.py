@@ -11,5 +11,5 @@ with open(PROJECT_PATH / 'env.json') as f:
     ENV = json.load(f)
 
 JWT_SECRET = ENV["JWT_SECRET"]
-JWT_ALGORITHM = "HS256"
-JWT_EXP = 60
+JWT_EXP = CONFIG.get("JWT_EXP", None)
+JWT_ALGORITHM = CONFIG.get("JWT_ALGORITHM", "HS256")

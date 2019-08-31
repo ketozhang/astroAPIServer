@@ -1,8 +1,15 @@
 import functools
 import jwt
 from datetime import datetime, timedelta
-from flask import abort, request
-from .globals import PROJECT_PATH, CONFIG, ENV, JWT_SECRET, JWT_ALGORITHM, JWT_EXP
+from flask import request, abort
+from .globals import (
+    PROJECT_PATH,
+    CONFIG,
+    ENV,
+    JWT_SECRET,
+    JWT_ALGORITHM,
+    JWT_EXP,
+)
 
 
 def login_required(f):
@@ -14,43 +21,42 @@ def login_required(f):
 
     @functools.wraps(f)
     def wrapper(*args, **kwargs):
-        username = get_current_user()
-        if username is None:
-            abort(401)
-        else:
+        jwt_token = request.cookies.get("Authentication")
+        if check_auth(jwt_token):
             return f(*args, **kwargs)
+        else:
+            abort(401)
 
     return wrapper
 
 
-def authenticate(username, password):
-    """
-    Returns a JWT token if credentials are valid, otherwise ABORT 401.
-    """
-    print(f"Authentication with {username}, {password}")
-    if username != 'test' or password != 'test':
-        abort(401)
-    print("Success")
+def create_auth(payload):
+    if JWT_EXP is not None:
+        payload["exp"] = datetime.utcnow() + timedelta(seconds=JWT_EXP)
 
-    payload = {"sub": username}
-    payload["exp"] = datetime.utcnow() + timedelta(seconds=JWT_EXP)
     jwt_token = jwt.encode(payload, JWT_SECRET, JWT_ALGORITHM)
     return jwt_token
 
 
-def check_auth(jwt_token):
+def check_auth(jwt_token, return_payload=False):
     try:
         payload = jwt.decode(jwt_token, JWT_SECRET, JWT_ALGORITHM)
-        return payload
-    except jwt.ExpiredSignatureError or jwt.InvalidTokenError:
-        return None
+        if return_payload:
+            return payload
+        else:
+            return True
+    except (
+        jwt.ExpiredSignatureError,
+        jwt.InvalidTokenError,
+        jwt.exceptions.DecodeError,
+    ):
+        return False
 
 
-def get_current_user():
+def get_payload():
     jwt_token = request.cookies.get("Authentication")
-    if jwt_token:
-        payload = check_auth(jwt_token)
-        if payload:
-            return payload['sub']
-
-    return None
+    payload = check_auth(jwt_token, return_payload=True)
+    if payload is False:
+        return None
+    else:
+        return payload
