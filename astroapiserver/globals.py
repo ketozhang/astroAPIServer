@@ -2,7 +2,7 @@ from pathlib import Path
 import json
 import yaml
 
-PROJECT_PATH = Path(__file__).resolve().parents[1]
+PROJECT_PATH = Path.cwd()
 
 with open(PROJECT_PATH / "config.yml") as f:
     CONFIG = yaml.safe_load(f)
