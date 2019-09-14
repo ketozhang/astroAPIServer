@@ -1,19 +1,18 @@
 import sys
 from pathlib import Path
-
-PROJECT_PATH = Path(__file__).parents[1].resolve()
-
+import logging
 from flask import (
     Flask,
     abort,
-    make_response,
     jsonify,
     redirect,
     render_template,
     request,
     url_for,
 )
-from astroapiserver import API, get_payload, create_auth, login_required, ENV
+
+PROJECT_PATH = Path(__file__).parents[1].resolve()
+from astroapiserver import API, create_auth, ENV
 
 
 def authenticate(username, password):
@@ -27,8 +26,10 @@ def authenticate(username, password):
         return payload
 
 
-app = Flask(__name__, template_folder=str(PROJECT_PATH / 'test' / "templates"))
-app.secret_key = ENV['SECRET']
+app = Flask(__name__, template_folder=str(PROJECT_PATH / "test" / "templates"))
+app.secret_key = ENV["SECRET"]
+logging.basicConfig(level=logging.DEBUG)
+logger = app.logger
 api = API(app, authenticate)
 
 ################
@@ -36,40 +37,39 @@ api = API(app, authenticate)
 ################
 @app.route("/")
 def home():
-    context = {}
-
-    payload = get_payload()
-    if payload is not None:
-        context["username"] = payload["username"]
-        return context["username"]
+    user_info = api.get_user_info()
+    if user_info is not None:
+        return jsonify(user_info)
     else:
-        return 'This page requires login.'
-    # return render_template('home.html', **context)
+        return jsonify(None)
 
 
 @app.route("/secret")
-@login_required
+@api.login_required
 def secret():
     return "42"
 
 
 @app.route("/login", methods=["POST"])
 def login():
-    if request.method == "POST":
-        response = api.login(
-            request.form.get("username"), request.form.get("password")
-        )
+    username, password = (
+        request.form.get("username"),
+        request.form.get("password"),
+    )
+    logger.info(f"Login Requested for <{username}> ...")
+    response = api.login(username, password)
 
-        if response is False:
-            print(f"BAD: {response}")
-            abort(401)
-        else:
-            print(f"GOOD: {response}")
-            return response
+    if response is False:
+        logger.info("Login Failed")
+        abort(401)
+    else:
+        logger.info("Login Success")
+        return response
 
 
 @app.route("/logout", methods=["POST"])
 def logout():
+    logger.info("Logout Requested...")
     response = api.logout()
     return response
 
