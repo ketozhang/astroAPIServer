@@ -1,2 +1,2 @@
 # astroAPIServer
-Boilerplate and Toolkit to build API Server for Web Data Access and Data Releases fit for Astronomy Research Content
+Boilerplate and toolkit to build API servers for data access and data releases Designed for astronomy research content on web apps.
