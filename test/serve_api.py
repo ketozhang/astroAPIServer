@@ -13,7 +13,7 @@ from flask import (
     request,
     url_for,
 )
-from astroapiserver import API, get_payload, create_auth, login_required
+from astroapiserver import API, get_payload, create_auth, login_required, ENV
 
 
 def authenticate(username, password):
@@ -21,14 +21,14 @@ def authenticate(username, password):
     Use by API by storing payload to user's cookie. Returns cookie (a dict).
     """
     if username != "test" or password != "test":
-        abort(401)
+        return False
     else:
         payload = {"username": username}
         return payload
 
 
-app = Flask(__name__, template_folder=str(PROJECT_PATH / "templates"))
-app.secret_key = "test"
+app = Flask(__name__, template_folder=str(PROJECT_PATH / 'test' / "templates"))
+app.secret_key = ENV['SECRET']
 api = API(app, authenticate)
 
 ################
@@ -41,8 +41,10 @@ def home():
     payload = get_payload()
     if payload is not None:
         context["username"] = payload["username"]
-
-    return render_template("home.html", **context)
+        return context["username"]
+    else:
+        return 'This page requires login.'
+    # return render_template('home.html', **context)
 
 
 @app.route("/secret")
@@ -53,14 +55,17 @@ def secret():
 
 @app.route("/login", methods=["POST"])
 def login():
-    response = api.login(
-        request.form.get("username"), request.form.get("password")
-    )
+    if request.method == "POST":
+        response = api.login(
+            request.form.get("username"), request.form.get("password")
+        )
 
-    if response is False:
-        abort(401)
-    else:
-        return response
+        if response is False:
+            print(f"BAD: {response}")
+            abort(401)
+        else:
+            print(f"GOOD: {response}")
+            return response
 
 
 @app.route("/logout", methods=["POST"])
@@ -70,4 +75,4 @@ def logout():
 
 
 if __name__ == "__main__":
-    app.run(port=8080, debug=True)
+    app.run(port=8081, debug=True)

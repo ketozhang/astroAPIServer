@@ -9,7 +9,7 @@ from flask import (
     request,
     url_for,
 )
-from flask_wtf.csrf import CSRFProtect
+from flask_wtf.csrf import CSRFProtect, generate_csrf
 from .globals import PROJECT_PATH, CONFIG, ENV
 from .authentication import login_required, get_payload, create_auth
 
@@ -32,7 +32,7 @@ class API:
     def login(self, *args, **kwargs):
         """
         Login with API#authentication.
-        On success, return redirection to home as response.
+        On success, set cookie with authentication.
         On fail, return False.
         """
         # Either JWT will be valid or the abort happens.
@@ -42,7 +42,7 @@ class API:
             return False
         else:
             # JWT token thus login is valid hereon
-            response = make_response(redirect(url_for("home")))
+            response = make_response(redirect(request.headers.get("Referer")))
             response.set_cookie("Authentication", jwt_token)
             return response
 
@@ -51,6 +51,15 @@ class API:
         Logout via throwing away the JWT token stored in cookie (if exists).
         On success, return redirection to home as response
         """
-        response = make_response(redirect(url_for("home")))
+        response = make_response(redirect(request.headers.get("Referer")))
         response.set_cookie("Authentication", "", expires=0)
         return response
+
+    def generate_csrf(self, return_response=True, **kwargs):
+        csrf_token = generate_csrf(*kwargs)
+        if return_response:
+            response = make_response()
+            response.set_cookie('csrf_token', csrf_token)
+            return response
+        else:
+            return csrf_token

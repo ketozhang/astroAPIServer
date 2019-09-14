@@ -11,6 +11,8 @@ flask = "*"
 pyjwt = "*"
 pyyaml = "*"
 flask-wtf = "*"
+requests = "*"
+astroapiserver = {editable = true,path = "."}
 
 [requires]
 python_version = "3.7"

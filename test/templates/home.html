@@ -4,7 +4,7 @@
 {% if username %}
 Current User: {{ username }}
 <br>
-<form action="/logout" method="post">
+<form action="{{API_URL}}/logout" method="post">
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
     <input type="submit" value="Logout">
 </form>
@@ -12,7 +12,7 @@ Current User: {{ username }}
 {% else %}
 Current User: N/A
 <br>
-<form action="/login" method="post">
+<form action="http://127.0.0.1:8081/login" method="post">
     <input type="text" name="username", placeholder="username">
     <br>
     <input type="password" name="password" placeholder="password">
@@ -21,5 +21,5 @@ Current User: N/A
     <input type="submit" value="Login">
 </form>
 {% endif %}
-
+<br>
 {% endblock %}
