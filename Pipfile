@@ -13,6 +13,8 @@ pyyaml = "*"
 flask-wtf = "*"
 requests = "*"
 astroapiserver = {editable = true,path = "."}
+pymysql = "*"
+cryptography = "*"
 
 [requires]
 python_version = "3.7"

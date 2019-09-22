@@ -11,8 +11,8 @@ from flask import (
     render_template,
     url_for,
 )
-from astroapiserver import ENV
-from flask_wtf.csrf import generate_csrf, validate_csrf, ValidationError
+from astroapiserver import ENV, API
+from flask_wtf.csrf import generate_csrf, validate_csrf
 
 PROJECT_PATH = Path(__file__).parents[1].resolve()
 API_URL = "http://127.0.0.1:8081"
@@ -20,10 +20,9 @@ API_URL = "http://127.0.0.1:8081"
 app = Flask(__name__, template_folder=str(PROJECT_PATH / "test" / "templates"))
 app.secret_key = ENV["SECRET"]
 
-
 @app.context_processor
 def global_var():
-    var = {"API_URL": API_URL, "csrf_token": generate_csrf}
+    var = {"API_URL": API_URL, "csrf_token": lambda: generate_csrf()}
     return var
 
 
