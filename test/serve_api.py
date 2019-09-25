@@ -1,62 +1,64 @@
 import sys
 from pathlib import Path
 import logging
-from flask import (
-    Flask,
-    abort,
-    jsonify,
-    redirect,
-    render_template,
-    request,
-    url_for,
-)
-
-PROJECT_PATH = Path(__file__).parents[1].resolve()
+from astropy.table import Table
+import yaml
+from apispec import APISpec
+from apispec_webframeworks.flask import FlaskPlugin
+from flask import Flask, abort, jsonify, redirect, render_template, request, url_for
 from astroapiserver import API, create_auth, ENV
+from auth import authenticate, authorize
 from database_handler import get_database, get_admin_database
 
+PROJECT_PATH = Path(__file__).parents[1].resolve()
 
-def authenticate(username, password):
-    """
-    Use by API by storing payload to user's cookie. Returns cookie (a dict).
-    """
-    db = get_database(username, password)
-
-    if db:
-        db.close()
-        payload = {"username": username}
-        return payload
-    else:
-        return False
-
-
-def authorize(payload):
-    """Given a payload, return the roles of the user"""
-    db = get_admin_database()
-    username = payload["username"]
-
-    query = "SELECT * FROM users WHERE username=%s"
-    db.execute(query, [username])
-    row = db.fetchone()
-
-    roles = []
-    for role in ["admin", "dev"]:
-        if row[f"is_{role}"] == 1:
-            roles.append(role)
-    return roles
-
-
+# Flask App and API
 app = Flask(__name__, template_folder=str(PROJECT_PATH / "test" / "templates"))
 app.secret_key = ENV["SECRET"]
+api = API(app, authenticate=authenticate, authorize=authorize)
+spec = APISpec(
+    title="Test",
+    version="1.0.0",
+    openapi_version="3",
+    info={"description": "A test API."},
+    plugins=[FlaskPlugin()],
+)
+
+spec.components.schema(
+    "Employee",
+    {
+        "properties": {
+            "id": {"type": "integer", "format": "int64"},
+            "name": {"type": "string"},
+        }
+    },
+)
+
+# Logging
 logging.basicConfig(level=logging.DEBUG)
 logger = app.logger
-api = API(app, authenticate=authenticate, authorize=authorize)
 
-################
-# WEB / ROUTES #
-################
+
+def execute_query(cursor, query, params):
+    cursor.execute(query, params)
+    result = {"query": cursor.mogrify(query, params), "data": cursor.fetchall()}
+
+    output_format = request.args.get('output_format', 'JSON')
+    if output_format == "JSON":
+        return jsonify(result)
+    elif output_format == "ASCII":
+        table = Table(result['data'])
+        return str(table)
+    elif output_format == "CSV":
+        return 'bad'
+    else:
+        abort(400)  # Return 400 BAD REQUEST
+
+###############
+# META ROUTES #
+###############
 @app.route("/")
-def home():
+def home_page():
     user_info = api.get_user_info()
     if user_info is not None:
         return jsonify(user_info)
@@ -64,36 +66,37 @@ def home():
         return jsonify(None)
 
 
-@app.route("/query", methods=["POST", "GET"])
-@api.login_required("admin")
-def make_query():
-    db = get_admin_database(database="employees")
+@app.route("/admin")
+def admin_page():
+    """
+    Admin page with OpenAPI tools.
+    User may use this to login thus this page is not constrained to only admin.
+    """
+    user_info = api.get_user_info()
 
-    query = request.form.get("query")
-    db.execute(query)
+    with open(PROJECT_PATH / "test/static/swagger.yaml", "r") as f:
+        paths = yaml.safe_load(f)['paths']
 
-    result = {"query": db.mogrify(query), "data": db.fetchall()}
-    return jsonify(result)
+    endpoints = set(map(str, app.url_map.iter_rules()))
+    endpoints -= {"/", "/login", "/logout"}
+    context = {
+        "endpoints": endpoints,
+        "logged_in": user_info is not None,
+        "username": user_info,
+        "paths": paths
+    }
 
+    print(paths)
 
-@app.route("/employees/<int:emp_no>", methods=["POST", "GET"])
-@api.login_required()
-def get_employee(emp_no):
-    db = get_admin_database(database="employees")
-
-    query = "SELECT * FROM employees where emp_no=%s"
-    db.execute(query, [emp_no])
-
-    result = {"query": db.mogrify(query, [emp_no]), "data": db.fetchall()}
-    return jsonify(result)
+    if user_info is None:
+        return render_template("login.html")
+    else:
+        return render_template("admin.html", **context)
 
 
 @app.route("/login", methods=["POST"])
 def login():
-    username, password = (
-        request.form.get("username"),
-        request.form.get("password"),
-    )
+    username, password = (request.form.get("username"), request.form.get("password"))
     logger.info(f"Login Requested for <{username}> ...")
     response = api.login(username, password)
 
@@ -112,5 +115,61 @@ def logout():
     return response
 
 
-if __name__ == "__main__":
-    app.run(port=8081, debug=True)
+###############
+# DATA ROUTES #
+###############
+@app.route("/sql")
+@api.login_required("admin")
+def get_query():
+    db = get_admin_database(database="employees")
+
+    query = request.args.get("query")
+    db.execute(query)
+
+    result = {"query": db.mogrify(query), "data": db.fetchall()}
+    return jsonify(result)
+
+
+@app.route("/employees/<int:emp_no>")
+@api.login_required()
+def get_employee(emp_no):
+    """
+    Properties
+    ----------
+    emp_no : int
+    first_name : str
+    last_name: str
+    birth_date: date
+    gender: enum('M', 'F')
+    hire_date: date
+
+    GET Response
+    ------------
+    Same as properties
+    """
+    db = get_admin_database(database="employees")
+    query = "SELECT * FROM employees where emp_no=%s"
+    params = [emp_no]
+    return execute_query(db, query, params)
+
+
+
+@app.route("/salary")
+@api.login_required()
+def get_salary():
+
+    db = get_admin_database(database="employees")
+    params = {k: request.args.get(k) for k in ['emp_no', 'from_date'] if request.args.get(k) is not None}
+    placeholders = [f"{param}=%({param})s" for param in params]
+    print(placeholders)
+    query = f"SELECT * FROM salaries {'WHERE ' + ' AND '.join(placeholders) if placeholders else ''} "
+    print(query)
+    return execute_query(db, query, params)
+
+# Register API to apispec/openapi documentation
+# Save to JSON file
+# with app.test_request_context():
+#     spec.path(view=get_employee)
+#     with open("test/static/swagger.json", "w") as f:
+#         import json
+#         json.dump(spec.to_dict(), f, indent=2)

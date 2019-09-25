@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang='en'>
+
+<head>
+  <meta charset="UTF-8">
+  <title>Placeholder</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, shink-to-fit=no">
+</head>
+
+<body>
+  <pre><code>
+    {{data}}<br><br>
+    {{data['level1']}}<br><br>
+    {{data['level1']['level2']}}<br><br>
+    {{data['level1']['level2']['level3']}}<br><br>
+    {{data['level1']['level2']['level3']['level4']}}<br><br>
+    {{data['level1']['level2']['level3']['level4']['level5']}}<br><br>
+  </code></pre>
+  <pre><code>
+    {{data}}<br><br>
+    {{data['paths']}}<br><br>
+    {{data['paths']['/employees/{emp_no}']}}<br><br>
+    {{data['paths']['/employees/{emp_no}']['get']}}<br><br>
+    {{data['paths']['/employees/{emp_no}']['get']['responses']}}<br><br>
+    {{data['paths']['/employees/{emp_no}']['get']['responses']['200']}}<br><br>
+    {{data.items()}}
+  </code></pre>
+</body>
+
+</html>

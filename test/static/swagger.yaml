@@ -1,0 +1,62 @@
+openapi: 3.0.0
+info:
+  title: Sample API
+  version: 0.0.1
+
+
+paths:
+  /sql:
+    description: Query using SQL
+    get:
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  table dependent:
+
+
+  /employees/{emp_no}:
+    description: Get employee
+    get:
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  emp_no:
+                    type: int
+                    description: Employee ID number
+                  birth_date:
+                    type: int
+                  first_name:
+                    type: str
+                  last_name:
+                    type: str
+                  gender:
+                    type: str
+                  hire_date:
+                    type: str
+  /salary:
+    description: Get salary of an employee starting from some date.
+    get:
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  emp_no:
+                    type: int
+                  salary:
+                    type: int
+                    description: Yearly salary in USD.
+                  from_date:
+                    type: str
+                  to_date:
+                    type: str

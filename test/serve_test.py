@@ -20,6 +20,7 @@ API_URL = "http://127.0.0.1:8081"
 app = Flask(__name__, template_folder=str(PROJECT_PATH / "test" / "templates"))
 app.secret_key = ENV["SECRET"]
 
+
 @app.context_processor
 def global_var():
     var = {"API_URL": API_URL, "csrf_token": lambda: generate_csrf()}
@@ -57,7 +58,3 @@ def home():
 @login_required
 def secret():
     return jsonify("42")
-
-
-if __name__ == "__main__":
-    app.run(port=8080, debug=True)

@@ -1,9 +1,13 @@
-local:
-	pipenv run python test/serve_api.py
+api:
+	FLASK_ENV=development \
+	FLASK_APP=test/serve_api.py \
+	pipenv run flask run -p 8080
 
-.PHONY: test
-test:
-	pipenv run python test/serve_test.py
+.PHONY: app
+app:
+	FLASK_APP=test/serve_test.py \
+	FLASK_ENV=development \
+	pipenv run flask run -p 8081
 
 wheel:
 	rm -rf *.whl
