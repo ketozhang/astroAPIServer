@@ -118,10 +118,10 @@ def logout():
 ###############
 # DATA ROUTES #
 ###############
-@app.route("/sql")
+@app.route("/<database>/sql")
 @api.login_required("admin")
-def get_query():
-    db = get_admin_database(database="employees")
+def get_query(database):
+    db = get_admin_database(database=database)
 
     query = request.args.get("query")
     db.execute(query)

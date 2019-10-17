@@ -5,16 +5,85 @@
   <meta charset="UTF-8">
   <title>AstroAPIServer | Admin</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+  <link id="bootstrap" rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
     integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
-  <link rel="stylesheet" href="static/admin.css" </head> <body>
+  <link rel="stylesheet" href="static/admin.css">
+</head>
+
+<body>
   <header>
     <nav class="container-fluid navbar navbar-light border-bottom">
       <a class="navbar-brand" href="#">AstroAPIServer Admin</a>
+      <button type="button" id="toggle-css" onclick="toggleCSS()">Toggle CSS</button>
     </nav>
+    <script>
+      function toggleCSS() {
+        let attr = $('#bootstrap').attr('disabled');
+
+        if (typeof attr !== typeof undefined && attr !== false) {
+          $('#bootstrap').removeAttr('disabled');
+        } else {
+          $('#bootstrap').attr('disabled', 'disabled')
+        }
+      }
+    </script>
   </header>
   <main class="container-fluid">
     <div class="row">
+      <!-- Sidenav -->
+      <div id="sidenav" class="col-12 col-md-4 bg-dark text-light vh-100 order-sm-1">
+        <!-- Output Formats -->
+        <div class="my-5">
+          <form id="api-form" action='' target="_blank" method="get">
+            <div class="form-group">
+              <!-- TODO: Change placeholder to start with /api -->
+              <textarea id="api-form-url" class="form-control" rows=2 placeholder="/salary?from_date=2000-01-01"
+                required></textarea>
+            </div>
+            <div class="form-group">
+              <!-- <div class="form-check form-check-inline">
+                  <input id="output-json" class="form-check-input" type="radio" name="output_format" value="JSON"
+                    checked>
+                  <label class="form-check-label" for="output-json">JSON</label>
+                </div>
+                <div class="form-check form-check-inline">
+                  <input id="output-ascii" class="form-check-input" type="radio" name="output_format" value="ASCII">
+                  <label class="form-check-label" for="output-ascii">ASCII</label>
+                </div>
+                <div class="form-check form-check-inline">
+                  <input id="output-csv" class="form-check-input" type="radio" name="output_format" value="CSV">
+                  <label class="form-check-label" for="output-csv">CSV</label>
+                </div> -->
+              <select id="output-format" class="form-control" name="output_format" required>
+                <option value="JSON">JSON</option>
+                <option value="ASCII">ASCII</option>
+                <option value="CSV">CSV</option>
+              </select>
+            </div>
+
+            <!-- Submit Buttons -->
+            <div class="row">
+              <div class="col">
+                <button type="submit" id="api-button-save" class="btn btn-info btn-block">Save</button>
+              </div>
+              <div class="col">
+                <button type="submit" id="api-button-inline" class="btn btn-info btn-block">Inline</button>
+              </div>
+              <div class="col">
+                <button type="submit" id="api-button-newtab" class="btn btn-info btn-block">New Tab</button>
+              </div>
+            </div>
+          </form>
+        </div>
+        <div id="result" class="card text-dark">
+          <div class="card-header lead">Output</div>
+          <div class="card-body p-0">
+            <pre id="result-code" class="m-0">
+            </pre>
+          </div>
+        </div>
+      </div>
+
       <div class="col pt-3 pr-0">
         <h2> Global Query Parameters </h2>
         <p><code class="text-muted">/api/path/to/endpoint?{param1}={value1}&{param2}={value2}</code></p>
@@ -27,23 +96,23 @@
           </thead>
           <tbody>
             <tr>
-              <th><code>select</code></th>
+              <th scope="row"><code>select</code></th>
               <td>Limit the output to only a certain set of columns.</td>
             </tr>
             <tr>
-              <th><code>limit</code></th>
+              <th scope="row"><code>limit</code></th>
               <td>Limit the output to only a certain set of rows.</td>
             </tr>
             <tr>
-              <th><code>orderby</code></th>
+              <th scope="row"><code>orderby</code></th>
               <td>Order the output by a column or ordered set of columns.</td>
             </tr>
             <tr>
-              <th><code>desc</code></th>
+              <th scope="row"><code>desc</code></th>
               <td>Order of the output is descending by default. Set to <code>False</code> for ascending order.</td>
             </tr>
             <tr>
-              <th><code>format</code> <small class="text-black-50">(required)</small></th>
+              <th scope="row"><code>format</code> <small class="text-black-50">(required)</small></th>
               <td>Output can be formatted as either JSON (default), ASCII, or CSV.</td>
             </tr>
           </tbody>
@@ -54,15 +123,15 @@
           <table class="table table-hover table-sm">
             <thead>
               <tr>
-                <th scope="col">Path</th>
-                <th scope="col" colspan=2>Response</th>
+                <th>Path</th>
+                <th colspan=2>Response</th>
               </tr>
             </thead>
             <tbody>
               {% for path in paths %}
               <tr>
                 <!-- Path -->
-                <tH>
+                <th scope="row">
                   <div><code>{{ path }}</code></div>
                   <small class="text-muted">
                     {{paths[path]['description']}}
@@ -89,97 +158,13 @@
         </div>
       </div>
 
-      <!-- Sidenav -->
-      <div class="col-12 col-md-4 bg-dark text-light sticky-top vh-100">
-        <!-- Output Formats -->
-        <div class="my-5">
-          <form id="api-form" action='' target="_blank" method="get">
-            <div class="form-row">
-              <div class="col">
-                <!-- TODO: Change placeholder to start with /api -->
-                <input type="text" id="api-form-url" class="form-control" placeholder="/salary?from_date=2000-01-01">
-              </div>
-            </div>
-            <div class="form-row mb-3">
-              <div class="col-8">
-                <div class="form-check form-check-inline">
-                  <input id="output-json" class="form-check-input" type="radio" name="output_format" value="JSON"
-                    checked>
-                  <label class="form-check-label" for="output-json">JSON</label>
-                </div>
-                <div class="form-check form-check-inline">
-                  <input id="output-ascii" class="form-check-input" type="radio" name="output_format" value="ASCII">
-                  <label class="form-check-label" for="output-ascii">ASCII</label>
-                </div>
-                <div class="form-check form-check-inline">
-                  <input id="output-csv" class="form-check-input" type="radio" name="output_format" value="CSV">
-                  <label class="form-check-label" for="output-csv">CSV</label>
-                </div>
-              </div>
-            </div>
-
-            <!-- Submit Buttons -->
-            <div class="row">
-              <div class="col">
-                <button type="submit" id="api-button-save" class="btn btn-info btn-block">Save</button>
-              </div>
-              <div class="col">
-                <button type="submit" id="api-button-inline" class="btn btn-info btn-block">Inline</button>
-              </div>
-              <div class="col">
-                <button type="submit" id="api-button-newtab" class="btn btn-info btn-block">New Tab</button>
-              </div>
-            </div>
-          </form>
-        </div>
-        <div id="result" class="card text-dark">
-          <div class="card-header lead">Output</div>
-          <div class="card-body p-0">
-            <pre id="result-code" class="m-0">
-          </pre>
-          </div>
-        </div>
-      </div>
     </div>
   </main>
-  <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
-  <script>
-    $("#api-button-save").click(function (e) {
-      e.preventDefault()
-      $("#api-form").attr('action', endpoint)
-      // $(this).attr('action', window.location.origin + $("#api-form-url").val())
-    });
-    $("#api-button-inline").click(function (e) {
-      e.preventDefault()
-      url = $("#api-form-url").val()
-      if (url == '') {
-        url = $("#api-form-url").attr("placeholder")
-      }
-      let endpoint = window.location.origin + url
-      $.ajax({
-        type: "get",
-        url: endpoint,
-        data: $("#api-form").serialize(),
-        success: function (output) {
-          console.log(this.url)
-          if (typeof output === 'object') {
-            $("#result-code").html(JSON.stringify(output, null, 2))
-          } else {
-            $("#result-code").html(output)
-          }
-        },
-        error: function () {
-          console.log(this.url)
-        }
-      })
-    });
 
-    $("#api-button-newtab").click(function () {
-      let endpoint = window.location.origin + $("#api-form-url").val()
-      $("#api-form").attr('action', endpoint)
-      $(this).attr('action', window.location.origin + $("#api-form-url").val())
-    });
-  </script>
-  </body>
+  {% block script %}
+  <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+  <script src="{{request.url_root}}static/admin.js"></script>
+  {% endblock %}
+</body>
 
 </html>
