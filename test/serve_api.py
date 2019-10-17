@@ -3,8 +3,6 @@ from pathlib import Path
 import logging
 from astropy.table import Table
 import yaml
-from apispec import APISpec
-from apispec_webframeworks.flask import FlaskPlugin
 from flask import Flask, abort, jsonify, redirect, render_template, request, url_for
 from astroapiserver import API, create_auth, ENV
 from auth import authenticate, authorize
@@ -16,23 +14,6 @@ PROJECT_PATH = Path(__file__).parents[1].resolve()
 app = Flask(__name__, template_folder=str(PROJECT_PATH / "test" / "templates"))
 app.secret_key = ENV["SECRET"]
 api = API(app, authenticate=authenticate, authorize=authorize)
-spec = APISpec(
-    title="Test",
-    version="1.0.0",
-    openapi_version="3",
-    info={"description": "A test API."},
-    plugins=[FlaskPlugin()],
-)
-
-spec.components.schema(
-    "Employee",
-    {
-        "properties": {
-            "id": {"type": "integer", "format": "int64"},
-            "name": {"type": "string"},
-        }
-    },
-)
 
 # Logging
 logging.basicConfig(level=logging.DEBUG)
@@ -165,11 +146,3 @@ def get_salary():
     query = f"SELECT * FROM salaries {'WHERE ' + ' AND '.join(placeholders) if placeholders else ''} "
     print(query)
     return execute_query(db, query, params)
-
-# Register API to apispec/openapi documentation
-# Save to JSON file
-# with app.test_request_context():
-#     spec.path(view=get_employee)
-#     with open("test/static/swagger.json", "w") as f:
-#         import json
-#         json.dump(spec.to_dict(), f, indent=2)

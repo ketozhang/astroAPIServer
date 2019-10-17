@@ -22,8 +22,9 @@ $("#api-button-inline").click(function (e) {
                 $("#result-code").html(output)
             }
         },
-        error: function () {
+        error: function (jqXHR, textStatus, errorThrown) {
             console.log(this.url)
+            $("#result-code").html(`<p class="text-danger">${textStatus}<br>${errorThrown}</p>`)
         }
     })
 });

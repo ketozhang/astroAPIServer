@@ -1,7 +1,7 @@
 import pymysql
 
 
-def get_admin_database(database="apiserver"):
+def get_admin_database(database):
     con = pymysql.connect(
         user="keto", read_default_file="/home/keto/.my.cnf", database=database
     )
