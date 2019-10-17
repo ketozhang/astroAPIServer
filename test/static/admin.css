@@ -61,3 +61,7 @@ th {
   width: 50%;
   max-width: 100px;
 }
+
+#result-ascii {
+  padding: 0;
+}

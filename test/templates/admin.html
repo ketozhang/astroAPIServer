@@ -34,7 +34,7 @@
       <div id="sidenav" class="col-12 col-md-4 bg-dark text-light vh-100 order-sm-1">
         <!-- Output Formats -->
         <div class="my-5">
-          <form id="api-form" target="_blank" method="get">
+          <form id="api-form" onsubmit="return false;">
             <div class="form-group">
               <!-- TODO: Change placeholder to start with /api -->
               <textarea id="api-form-url" class="form-control" rows=2 placeholder="/salary?from_date=2000-01-01"></textarea>
@@ -54,7 +54,7 @@
                   <label class="form-check-label" for="output-csv">CSV</label>
                 </div> -->
               <select id="output-format" class="form-control" name="output_format" required>
-                <option value="JSON">JSON</option>
+                <option value="JSON" selected>JSON</option>
                 <option value="ASCII">ASCII</option>
                 <option value="CSV">CSV</option>
               </select>
@@ -63,13 +63,13 @@
             <!-- Submit Buttons -->
             <div class="row">
               <div class="col">
-                <button type="submit" id="api-button-save" class="btn btn-info btn-block">Save</button>
+                <button id="api-button-save" class="btn btn-info btn-block">Save</button>
               </div>
               <div class="col">
-                <button type="submit" id="api-button-inline" class="btn btn-info btn-block">Inline</button>
+                <button id="api-button-inline" class="btn btn-info btn-block">Inline</button>
               </div>
               <div class="col">
-                <button type="submit" id="api-button-newtab" class="btn btn-info btn-block">New Tab</button>
+                <button id="api-button-newtab" class="btn btn-info btn-block">New Tab</button>
               </div>
             </div>
           </form>

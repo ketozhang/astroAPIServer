@@ -5,6 +5,7 @@ $("#api-button-save").click(function (e) {
 });
 $("#api-button-inline").click(function (e) {
     e.preventDefault()
+    $("#result-code").html("...")
     url = $("#api-form-url").val()
     if (url == '') {
         url = $("#api-form-url").attr("placeholder")
@@ -30,7 +31,20 @@ $("#api-button-inline").click(function (e) {
 });
 
 $("#api-button-newtab").click(function () {
-    let endpoint = window.location.origin + $("#api-form-url").val()
-    $("#api-form").attr('action', endpoint)
-    $(this).attr('action', window.location.origin + $("#api-form-url").val())
+    let formArgs = "newtab=true" + "&" + $("#api-form").serialize();
+    let url = $("#api-form-url").val();
+    if (url == "") {
+        url = $("#api-form-url").attr('placeholder');
+    }
+
+    let urlArgs;
+    [url, urlArgs] = url.split("?");
+
+    if (urlArgs !== "undefined") {
+        formArgs += '&' + urlArgs;
+    }
+
+    let endpoint = window.location.origin + url + '?' + formArgs;
+
+    window.open(endpoint)
 });

@@ -16,11 +16,13 @@ Not yet released for public use
 
 ## Getting Started
 
+* Import and define `astroapiserver::API`
+* Define database handling
+* Create authentication and authorization databases
+* Define authentication and authorization functions
+* Install simplejson (`pip install simplejson`)
 * Define environment variables
     * `SECRET`
     * `JWT_SECRET`
     * `JWT_EXP`
     * (Optional) Store in env.json
-* Import and define `astroapiserver::API`
-* Create authentication and authorization databases
-* Define authentication and authorization functions

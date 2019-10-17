@@ -17,7 +17,7 @@ def authenticate(username, password):
 
 def authorize(payload):
     """Given a payload, return the roles of the user"""
-    db = get_admin_database()
+    db = get_admin_database(database="test")
     username = payload["username"]
 
     query = "SELECT * FROM users WHERE username=%s"
@@ -29,3 +29,4 @@ def authorize(payload):
         if row[f"is_{role}"] == 1:
             roles.append(role)
     return roles
+
