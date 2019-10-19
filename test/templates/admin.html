@@ -14,9 +14,9 @@
   <header>
     <nav class="container-fluid navbar navbar-light border-bottom">
       <a class="navbar-brand" href="#">AstroAPIServer Admin</a>
-      <button type="button" id="toggle-css" onclick="toggleCSS()">Toggle CSS</button>
+      <!-- <button type="button" id="toggle-css" onclick="toggleCSS()">Toggle CSS</button> -->
     </nav>
-    <script>
+    <!-- <script>
       function toggleCSS() {
         let attr = $('#bootstrap').attr('disabled');
 
@@ -26,18 +26,20 @@
           $('#bootstrap').attr('disabled', 'disabled')
         }
       }
-    </script>
+    </script> -->
   </header>
   <main class="container-fluid">
     <div class="row">
       <!-- Sidenav -->
-      <div id="sidenav" class="col-12 col-md-4 bg-dark text-light vh-100 order-sm-1">
+      <div id="sidenav" class="col-12 col-md-4 text-light order-sm-1">
         <!-- Output Formats -->
         <div class="my-5">
-          <form id="api-form" onsubmit="return false;">
+          <form id="api-form">
             <div class="form-group">
               <!-- TODO: Change placeholder to start with /api -->
-              <textarea id="api-form-url" class="form-control" rows=2 placeholder="/salary?from_date=2000-01-01"></textarea>
+              <label for="api-form-url">API endpoint</label>
+              <textarea id="api-form-url" class="form-control" rows=3
+                placeholder="/salary?from_date=2000-01-01"></textarea>
             </div>
             <div class="form-group">
               <!-- <div class="form-check form-check-inline">
@@ -53,15 +55,37 @@
                   <input id="output-csv" class="form-check-input" type="radio" name="output_format" value="CSV">
                   <label class="form-check-label" for="output-csv">CSV</label>
                 </div> -->
-              <select id="output-format" class="form-control" name="output_format" required>
-                <option value="JSON" selected>JSON</option>
-                <option value="ASCII">ASCII</option>
-                <option value="CSV">CSV</option>
-              </select>
+
+              <!-- Output Format buttons -->
+              <div class="form-row mb-2">
+                <span class="col-3 col-lg-4 align-text-bottom">
+                  <label for="output-format" class="align-text-bottom">Output format</label>
+                </span>
+                <div class="col">
+                  <select id="output-format" class="form-control" name="output_format" required>
+                    <option value="JSON" selected>JSON</option>
+                    <option value="ASCII">ASCII</option>
+                    <option value="CSV">CSV</option>
+                  </select>
+                </div>
+              </div>
+
+              <!-- Submit Buttons -->
+              <div class="form-row mb-2">
+                <span class="col-3 col-lg-4 align-text-bottom">
+                  <label for="print-method" class="align-text-bottom">Print as</label>
+                </span>
+                <div class="col">
+                  <select id="print-method" class="form-control" name="print_method" required>
+                    <option value="inline" selected>Inline</option>
+                    <option value="newtab">New Tab</option>
+                    <option value="save" disabled>Save</option>
+                  </select>
+                </div>
+              </div>
             </div>
 
-            <!-- Submit Buttons -->
-            <div class="row">
+            <!-- <div class="row">
               <div class="col">
                 <button id="api-button-save" class="btn btn-info btn-block">Save</button>
               </div>
@@ -71,98 +95,141 @@
               <div class="col">
                 <button id="api-button-newtab" class="btn btn-info btn-block">New Tab</button>
               </div>
+            </div> -->
+            <div style="height: 1px;">
+              <button id="#submit" type="submit" class="btn btn-light float-right">Submit</button>
             </div>
           </form>
         </div>
         <div id="result" class="card text-dark">
           <div class="card-header lead">Output</div>
-          <div class="card-body p-0">
+          <div class="card-body">
             <pre id="result-code" class="m-0">
             </pre>
           </div>
         </div>
       </div>
 
-      <div class="col pt-3 pr-0">
+      <div class="col-12 col-md-8 pt-3 pr-2">
         <h2> Global Query Parameters </h2>
         <p><code class="text-muted">/api/path/to/endpoint?{param1}={value1}&{param2}={value2}</code></p>
         <table class="table table-hover table-sm">
           <thead>
             <tr>
               <th>Parameter</th>
+              <th>Type</th>
               <th>Description</th>
             </tr>
           </thead>
           <tbody>
             <tr>
               <th scope="row"><code>select</code></th>
+              <td><code class="text-muted">str</code></td>
               <td>Limit the output to only a certain set of columns.</td>
             </tr>
             <tr>
               <th scope="row"><code>limit</code></th>
+              <td><code class="text-muted">int</code></td>
               <td>Limit the output to only a certain set of rows.</td>
             </tr>
             <tr>
               <th scope="row"><code>orderby</code></th>
+              <td><code class="text-muted">str</code></td>
               <td>Order the output by a column or ordered set of columns.</td>
             </tr>
             <tr>
               <th scope="row"><code>desc</code></th>
+              <td><code class="text-muted">bool</code></td>
               <td>Order of the output is descending by default. Set to <code>False</code> for ascending order.</td>
             </tr>
             <tr>
               <th scope="row"><code>format</code> <small class="text-black-50">(required)</small></th>
+              <td><code class="text-muted">str</code></td>
               <td>Output can be formatted as either JSON (default), ASCII, or CSV.</td>
             </tr>
           </tbody>
         </table>
         <h2> API Endpoints </h2>
+        <small class="text-muted float-right"><code>*</code>required</small>
         <!-- Endpoint Table -->
-        <div class="table-responsive">
-          <table class="table table-hover table-sm">
-            <thead>
-              <tr>
-                <th>Path</th>
-                <th colspan=2>Response</th>
-              </tr>
-            </thead>
-            <tbody>
-              {% for path in paths %}
-              <tr>
-                <!-- Path -->
-                <th scope="row">
-                  <div><code>{{ path }}</code></div>
-                  <small class="text-muted">
-                    {{paths[path]['description']}}
-                  </small>
-                </th>
+        <table class="table table-striped table-sm">
+          <thead>
+            <tr>
+              <th style="min-width: 200px;">Path</th>
+              <th>Parameter</th>
+              <th>Response</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for path in paths %}
+            <!-- Header Row -->
+            <tr>
+              <!-- Path -->
+              <th scope="row" colspan=3>
+                <div><a href="javascript:pathToForm('{{ path }}');" class="api-path"><code>{{ path }}</code></a></div>
+                <small class="text-muted">
+                  {{paths[path]['description']}}
+                </small>
+              </th>
+            </tr>
 
-                {% set fields = paths[path]['get']['responses']['200']['content']['application/json']['schema']['properties'] %}
+            <!-- Subcontent Row -->
+            <tr class="subcontent py-3">
+              <!-- Parameter -->
+              <td></td>
+              <td scope="row">
+                {% for params in paths[path]['get']['parameters']%}
+                {% if params['description'] %}
+                <a href="javascript:void(0);" class="tooltip-parent" data-toggle="tooltip" data-placement="right"
+                  title="{{params['description']}}">
+                  <code>{{params['name']}}{% if params['required'] %}*{% endif %}</code>
+                </a>
 
-                <!-- Response -->
-                <td>
-                  {% for field, meta in fields.items() %}
-                  <code>{{field}}</code><br>
-                  {% endfor %}
-                </td>
-                <td>
-                  {% for field, meta in fields.items() %}
-                  <code class="type">{{meta['type']}}</code> <small>{{meta['description']}}</small><br>
-                  {% endfor %}
-                </td>
-              </tr>
-              {% endfor %}
-            </tbody>
-          </table>
-        </div>
+                {% else %}
+                <code>{{params['name']}}{% if params['required'] %}*{% endif %}</code>
+                {% endif %}
+                <br>
+                {% endfor %}
+              </td>
+
+              {% set fields = paths[path]['get']['responses']['200']['content']['application/json']['schema']['properties'] %}
+
+              <!-- Response -->
+              <td>
+                {% for field, meta in fields.items() %}
+                <div class="row">
+                  <div class="col">
+                    <code>{{field}}</code>
+                  </div>
+                  <div class="col">
+                    <code class="type">{{meta['type']}}</code> <small>{{meta['description']}}</small><br>
+                  </div>
+                </div>
+                {% endfor %}
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
       </div>
-
     </div>
+    <button id="back-to-top" type="button"><a>&#x21A5;<br><small>TOP</small></a></button>
   </main>
 
   {% block script %}
   <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
   <script src="{{request.url_root}}static/admin.js"></script>
+  <script>
+    $("#back-to-top").click(function () {
+      window.scrollTo(0, 0);
+    })
+  </script>
+  <script>
+  function pathToForm(path) {
+    console.log(path);
+    $("#api-form-url").val(path);
+  };
+  </script>
   {% endblock %}
 </body>
 

@@ -5,6 +5,7 @@ verify_ssl = true
 
 [dev-packages]
 rope = "*"
+black = "*"
 
 [packages]
 flask = "*"
@@ -20,6 +21,8 @@ apispec-webframeworks = "*"
 astropy = "*"
 simplejson = "*"
 pandas = "*"
+webargs = "*"
 
-[requires]
-python_version = "3.6"
+[pipenv]
+allow_prereleases = true
+

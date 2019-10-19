@@ -8,6 +8,11 @@ paths:
   /sql:
     description: Query using SQL
     get:
+      parameters:
+        - name: query
+          in: path
+          required: true
+          description: SQL query
       responses:
         '200':
           content:
@@ -15,12 +20,38 @@ paths:
               schema:
                 type: object
                 properties:
-                  table dependent:
+                  columns:
+                    description: table dependent
+
+  /{database}/{table}:
+    description: Query any database's table
+    get:
+      parameters:
+        - name: "{globals}"
+          in: path
+          description: Any global query parameters
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  columns:
+                    description: table dependent
 
 
-  /employees/{emp_no}:
-    description: Get employee
+  /observation/voevents_galaxy:
+    description: Get voevents galaxy selection list
     get:
+      parameters:
+        - name: "{globals}"
+          in: path
+          description: Any global query parameters
+        - name: "TriggerNumber"
+          in: path
+        - name: "TriggerSequence"
+          in: path
       responses:
         '200':
           content:
@@ -28,35 +59,45 @@ paths:
               schema:
                 type: object
                 properties:
-                  emp_no:
+                  id:
                     type: int
-                    description: Employee ID number
-                  birth_date:
+                  TriggerNumber:
                     type: int
-                  first_name:
-                    type: str
-                  last_name:
-                    type: str
-                  gender:
-                    type: str
-                  hire_date:
-                    type: str
-  /salary:
-    description: Get salary of an employee starting from some date.
-    get:
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  emp_no:
+                  TriggerSequence:
                     type: int
-                  salary:
-                    type: int
-                    description: Yearly salary in USD.
-                  from_date:
+                  TriggerType:
                     type: str
-                  to_date:
+                  raDeg:
+                    type: float
+                  decDeg:
+                    type: float
+                  disMpc:
+                    type: float
+                  Bmag:
+                    type: float
+                  gladeID:
+                    type: int
+                  DisToCentre_Arcmin:
+                    type: float
+                  S_total:
+                    type: float
+                  P_pos:
+                    type: float
+                  P_dis:
+                    type: float
+                  S_loc:
+                    type: float
+                  S_lum:
+                    type: float
+                  S_det:
+                    type: float
+                  Kait_observable:
+                    type: str
+                  Kait_observed:
+                    type: str
+                  Time_observed:
+                    type: datetime
+                  Limit_mag:
+                    type: int
+                  Comment:
                     type: str

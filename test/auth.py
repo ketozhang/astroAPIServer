@@ -29,4 +29,3 @@ def authorize(payload):
         if row[f"is_{role}"] == 1:
             roles.append(role)
     return roles
-

@@ -1,10 +1,19 @@
-$("#api-button-save").click(function (e) {
+$("#api-form").submit(function (e) {
+    e.preventDefault();
+    let printMethod = $('#print-method').val();
+    if (printMethod == 'inline') { printInline(); }
+    else if (printMethod == 'newtab') { printNewTab(); }
+    else if (printMethod == 'newtab') { printToFile(); }
+    else { return false; }
+});
+
+function printToFile() {
     e.preventDefault()
     $("#api-form").attr('action', endpoint)
     // $(this).attr('action', window.location.origin + $("#api-form-url").val())
-});
-$("#api-button-inline").click(function (e) {
-    e.preventDefault()
+};
+
+function printInline() {
     $("#result-code").html("...")
     url = $("#api-form-url").val()
     if (url == '') {
@@ -28,9 +37,9 @@ $("#api-button-inline").click(function (e) {
             $("#result-code").html(`<p class="text-danger">${textStatus}<br>${errorThrown}</p>`)
         }
     })
-});
+};
 
-$("#api-button-newtab").click(function () {
+function printNewTab() {
     let formArgs = "newtab=true" + "&" + $("#api-form").serialize();
     let url = $("#api-form-url").val();
     if (url == "") {
@@ -47,4 +56,4 @@ $("#api-button-newtab").click(function () {
     let endpoint = window.location.origin + url + '?' + formArgs;
 
     window.open(endpoint)
-});
+}
