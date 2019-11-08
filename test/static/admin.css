@@ -52,7 +52,7 @@ code.type {
 }
 
 #sidenav {
-  background-color: rgb(28, 28, 28)!important;
+  background-color: rgb(25, 25, 25)!important;
   /* border-left: 5px solid white; */
   /* box-shadow: inset 10px 0px 0px rgb(60, 60, 60, 60); */
 }
@@ -102,8 +102,9 @@ border-color: #e83e8c!important;
 }
 
 tr.subcontent td {
-  padding-top: 1em;
-  padding-bottom: 2.5em;
+  padding-top: 0.5em;
+  padding-bottom: 1em;
+  border-top: 0;
 }
 
 #back-to-top {

@@ -11,7 +11,7 @@ except FileNotFoundError:
     CONFIG = {}
 
 try:
-    with open(PROJECT_PATH / 'env.json') as f:
+    with open(PROJECT_PATH / "env.json") as f:
         ENV = json.load(f)
 except FileNotFoundError:
     print("`env.json` not found, ENV will not be set")

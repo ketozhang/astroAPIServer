@@ -1,8 +1,11 @@
+from io import BytesIO
 import functools
 import json
+import pandas as pd
 from flask import (
     Flask,
     abort,
+    Response,
     make_response,
     jsonify,
     redirect,
@@ -10,13 +13,17 @@ from flask import (
     request,
     url_for,
 )
+from astropy.table import Table
+from astropy.io import ascii
 from flask_wtf.csrf import CSRFProtect, generate_csrf, validate_csrf, ValidationError
+from webargs.flaskparser import parser
+from webargs import fields
 from .globals import PROJECT_PATH
 from .authentication import get_payload, create_auth, check_auth
 
 
 class API:
-    def __init__(self, app, **kwargs):
+    def __init__(self, app, get_database, **kwargs):
         """[summary]
 
         Parameters
@@ -34,16 +41,16 @@ class API:
             if valid else returns an empty list.
         """
         self.app = app
+        self.get_database = get_database
         self.authenticate = kwargs.get("authenticate", lambda *args, **kwargs: True)
         self.authorize = kwargs.get("authorize", lambda *args, **kwargs: [])
         self.config = {
-            "JWT_SECRET": kwargs.get(
-                "jwt_secret", self.app.config["SECRET_KEY"]
-            ),
+            "JWT_SECRET": kwargs.get("jwt_secret", self.app.config["SECRET_KEY"]),
             "JWT_EXP": None,
             "JWT_ALGORITHM": "HS256",
         }
 
+    # Authentication and Authorization
 
     def login(self, *args, **kwargs):
         """
@@ -77,6 +84,7 @@ class API:
         on user's cookie.
         """
         roles_required = list(args)
+
         def decorator(f):
             @functools.wraps(f)
             def wrapper(*args, **kwargs):
@@ -84,7 +92,7 @@ class API:
                 if check_csrf and request.method != "GET":
                     try:
                         self.app.logger.info(f"CSRF: {request.form.get('csrf_token')}")
-                        validate_csrf(request.form.get('csrf_token'))
+                        validate_csrf(request.form.get("csrf_token"))
                     except ValidationError as e:
                         self.app.logger.info(e)
                         abort(403)
@@ -108,3 +116,114 @@ class API:
     def get_user_info(self):
         """Verify the JWT token. If valid return the payload, else None"""
         return get_payload(config=self.config)
+
+    ################
+    # QUERY HANDLING
+    ################
+    def execute_query(self, database, query, params={}, use_global_params=False):
+        """
+        Arguments
+        ---------
+        cursor: pymysql.cursor
+        query: str
+        params: list or dict
+        """
+        print(query, params)
+        if use_global_params:
+            query, global_params = self.parse_global_params(query, params, database)
+            params += global_params
+
+        cursor = self.get_database(database)
+        try:
+            cursor.execute(query, params)
+        except Exception as e:
+            raise Exception(f"{e} \n {cursor.mogrify(query, params)}")
+        result = {"query": cursor.mogrify(query, params), "data": cursor.fetchall()}
+
+        output_format = request.args.get("output_format", "JSON")
+        response_data = self.format_data(result, output_format)
+        if response_data is None:
+            abort(400)
+        else:
+            return response_data
+
+    def is_valid_table(self, database, table):
+        cursor = self.get_database(database)
+        cursor.execute("SHOW TABLES")
+        valid_tables = [list(row.values())[0] for row in cursor.fetchall()]
+
+        return table in valid_tables
+
+    def is_valid_columns(self, database, query, params, columns):
+        """SQL injection prevention should be done before calling this function"""
+        cursor = self.get_database(database)
+        cursor.execute(query, params)
+        valid_columns = [i[0] for i in cursor.description]
+
+        return all([col in valid_columns for col in columns])
+
+    def parse_global_params(self, query, params, database):
+        webargs_schema = {
+            "select": fields.DelimitedList(fields.Str()),
+            "limit": fields.Int(missing=100),
+            "orderby": fields.DelimitedList(fields.Str()),
+            "desc": fields.Bool(),
+        }
+
+        global_params = parser.parse(webargs_schema, request)
+        # global_params = {
+        #     "select": request.args.get("select"),
+        #     "limit": int(request.args.get("limit", 100)),
+        #     "orderby": request.args.get("orderby"),
+        #     "desc": request.args.get("desc"),
+        # }
+
+        params = []
+        query += " "
+
+        if global_params.get("select") is not None:
+            columns = global_params["select"]
+
+            if self.is_valid_columns(database, query, params, columns):
+                columns = ",".join(f"`{col}`" for col in columns)
+                query = query.replace("SELECT *", f"SELECT {columns}")
+            else:
+                abort(404)
+
+        if global_params.get("orderby") is not None:
+            columns = global_params["orderby"]
+
+            if self.is_valid_columns(database, query, columns):
+                columns = ",".join(f"`{col}`" for col in columns)
+                query += f"ORDER BY {columns} "
+            else:
+                abort(404)
+
+        if global_params.get("desc") is not None:
+            if global_params["desc"]:
+                query += "DESC "
+
+        if global_params.get("limit") is not None:
+            query += "LIMIT %s "
+            params.append(global_params["limit"])
+
+        # Trailing space cleanup with semicolon
+        if query[-1] == " ":
+            query = query[:-1] + ";"
+
+        return query, params
+
+    @staticmethod
+    def format_data(data, data_format):
+        if data_format == "JSON":
+            return jsonify(data)
+        elif data_format in ["ASCII", "TEXT"]:
+            colnames = data["data"][0].keys()
+            table = Table(data["data"], names=colnames)
+            return Response("\n".join(table.pformat_all()), mimetype="text/plain")
+        elif data_format == "CSV":
+            table = pd.DataFrame(data["data"])
+            return Response(table.to_csv(index=False), mimetype="text/plain")
+            # return '\n'.join(table.pformat_all(tableid="result-ascii"))
+        else:
+            return None

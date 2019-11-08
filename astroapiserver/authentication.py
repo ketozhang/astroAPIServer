@@ -15,10 +15,12 @@ def create_auth(payload, **kwargs):
         raise NotImplementedError()
 
     if jwt_exp is not None:
-        payload.update({
-            'exp': datetime.utcnow() + timedelta(seconds=jwt_exp),
-            'iat': datetime.utcnow()
-        })
+        payload.update(
+            {
+                "exp": datetime.utcnow() + timedelta(seconds=jwt_exp),
+                "iat": datetime.utcnow(),
+            }
+        )
 
     jwt_token = jwt.encode(payload, jwt_secret, jwt_algorithm)
     return jwt_token

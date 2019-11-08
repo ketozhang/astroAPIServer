@@ -79,7 +79,7 @@
                   <select id="print-method" class="form-control" name="print_method" required>
                     <option value="inline" selected>Inline</option>
                     <option value="newtab">New Tab</option>
-                    <option value="save" disabled>Save</option>
+                    <!-- <option value="save">Save</option> -->
                   </select>
                 </div>
               </div>
@@ -152,12 +152,12 @@
         <h2> API Endpoints </h2>
         <small class="text-muted float-right"><code>*</code>required</small>
         <!-- Endpoint Table -->
-        <table class="table table-striped table-sm">
+        <table class="table table-sm">
           <thead>
             <tr>
               <th style="min-width: 200px;">Path</th>
-              <th>Parameter</th>
-              <th>Response</th>
+              <th>Parameters</th>
+              <!-- <th>Response</th> -->
             </tr>
           </thead>
           <tbody>
@@ -165,18 +165,13 @@
             <!-- Header Row -->
             <tr>
               <!-- Path -->
-              <th scope="row" colspan=3>
+              <th scope="row">
                 <div><a href="javascript:pathToForm('{{ path }}');" class="api-path"><code>{{ path }}</code></a></div>
                 <small class="text-muted">
-                  {{paths[path]['description']}}
+                  {{paths[path]['summary']}}
                 </small>
               </th>
-            </tr>
-
-            <!-- Subcontent Row -->
-            <tr class="subcontent py-3">
               <!-- Parameter -->
-              <td></td>
               <td scope="row">
                 {% for params in paths[path]['get']['parameters']%}
                 {% if params['description'] %}
@@ -195,7 +190,7 @@
               {% set fields = paths[path]['get']['responses']['200']['content']['application/json']['schema']['properties'] %}
 
               <!-- Response -->
-              <td>
+              <!-- <td>
                 {% for field, meta in fields.items() %}
                 <div class="row">
                   <div class="col">
@@ -206,7 +201,7 @@
                   </div>
                 </div>
                 {% endfor %}
-              </td>
+              </td> -->
             </tr>
             {% endfor %}
           </tbody>
@@ -219,17 +214,6 @@
   {% block script %}
   <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
   <script src="{{request.url_root}}static/admin.js"></script>
-  <script>
-    $("#back-to-top").click(function () {
-      window.scrollTo(0, 0);
-    })
-  </script>
-  <script>
-  function pathToForm(path) {
-    console.log(path);
-    $("#api-form-url").val(path);
-  };
-  </script>
   {% endblock %}
 </body>
 

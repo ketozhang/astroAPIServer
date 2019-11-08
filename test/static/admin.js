@@ -1,3 +1,16 @@
+// Site Interactivity
+$("#back-to-top").click(function () {
+    window.scrollTo(0, 0);
+})
+
+function pathToForm(path) {
+    console.log(path);
+    $("#api-form-url").val(path);
+    $("#api-form-url").focus();
+};
+
+
+// API Form
 $("#api-form").submit(function (e) {
     e.preventDefault();
     let printMethod = $('#print-method').val();
@@ -7,6 +20,8 @@ $("#api-form").submit(function (e) {
     else { return false; }
 });
 
+
+// Printing API Query
 function printToFile() {
     e.preventDefault()
     $("#api-form").attr('action', endpoint)
