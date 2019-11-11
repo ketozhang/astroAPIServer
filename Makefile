@@ -9,6 +9,11 @@ app:
 	FLASK_ENV=development \
 	pipenv run flask run -p 8080 --host=0.0.0.0
 
+boilerplate:
+	FLASK_APP=test/boilerplate.py \
+	FLASK_ENV=development \
+		pipenv run flask run -p 8081 --host=0.0.0.0
+
 wheel:
 	rm -rf *.whl
 	python setup.py sdist bdist_wheel

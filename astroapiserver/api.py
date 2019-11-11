@@ -1,3 +1,4 @@
+from itertools import cycle
 from io import BytesIO
 import functools
 import json
@@ -41,13 +42,16 @@ class API:
             if valid else returns an empty list.
         """
         self.app = app
+        self.log = app.logger
         self.get_database = get_database
         self.authenticate = kwargs.get("authenticate", lambda *args, **kwargs: True)
         self.authorize = kwargs.get("authorize", lambda *args, **kwargs: [])
+        self.placeholder = kwargs.get("query_placeholder", "%s")
         self.config = {
             "JWT_SECRET": kwargs.get("jwt_secret", self.app.config["SECRET_KEY"]),
             "JWT_EXP": None,
             "JWT_ALGORITHM": "HS256",
+            "LIMIT_DEFAULT": 100
         }
 
     # Authentication and Authorization
@@ -91,10 +95,10 @@ class API:
                 # Check CSRF
                 if check_csrf and request.method != "GET":
                     try:
-                        self.app.logger.info(f"CSRF: {request.form.get('csrf_token')}")
+                        self.log.info(f"CSRF: {request.form.get('csrf_token')}")
                         validate_csrf(request.form.get("csrf_token"))
                     except ValidationError as e:
-                        self.app.logger.info(e)
+                        self.log.info(e)
                         abort(403)
                 # Check if user is logged in
                 payload = get_payload(config=self.config)
@@ -120,34 +124,6 @@ class API:
     ################
     # QUERY HANDLING
     ################
-    def execute_query(self, database, query, params={}, use_global_params=False):
-        """
-        Arguments
-        ---------
-        cursor: pymysql.cursor
-        query: str
-        params: list or dict
-        """
-        print(query, params)
-        if use_global_params:
-            query, params = self.parse_global_params(query, params, database)
-
-        cursor = self.get_database(database)
-        try:
-            print("CURSOR", query, params)
-            cursor.execute(query, params)
-        except Exception as e:
-            print(cursor.mogrify(query, params))
-            raise e
-        result = {"query": cursor.mogrify(query, params), "data": cursor.fetchall()}
-
-        output_format = request.args.get("output_format", "JSON")
-        response_data = self.format_data(result, output_format)
-        if response_data is None:
-            abort(400)
-        else:
-            return response_data
-
     def is_valid_table(self, database, table):
         cursor = self.get_database(database)
         cursor.execute("SHOW TABLES")
@@ -157,16 +133,17 @@ class API:
 
     def is_valid_columns(self, database, query, params, columns):
         """SQL injection prevention should be done before calling this function"""
+        print(query, params)
         cursor = self.get_database(database)
         cursor.execute(query, params)
-        valid_columns = [i[0] for i in cursor.description]
+        valid_columns = [d[0] for d in cursor.description]
 
         return all([col in valid_columns for col in columns])
 
     def parse_global_params(self, query, params, database):
         webargs_schema = {
             "select": fields.DelimitedList(fields.Str()),
-            "limit": fields.Int(missing=100),
+            "limit": fields.Int(missing=self.config["LIMIT_DEFAULT"]),
             "orderby": fields.DelimitedList(fields.Str()),
             "desc": fields.Bool(),
         }
@@ -179,15 +156,13 @@ class API:
         #     "desc": request.args.get("desc"),
         # }
 
-        query += " "
+        # Remove trailing semicolon
+        if query[-1] == ";":
+            query = query[:-1]
 
-        if global_params.get("select") is not None:
-            columns = global_params["select"]
-            if self.is_valid_columns(database, query, params, columns):
-                columns = ",".join(f"`{col}`" for col in columns)
-                query = query.replace("SELECT *", f"SELECT {columns}")
-            else:
-                abort(404)
+        # Make room for appension
+        query += " "
+        params = params.copy()
 
         if global_params.get("orderby") is not None:
             columns = global_params["orderby"]
@@ -202,15 +177,56 @@ class API:
             if global_params["desc"]:
                 query += "DESC "
 
-        if global_params.get("limit") is not None:
-            query += "LIMIT %s "
+        if global_params.get("limit") > 0:
+            query += f"LIMIT {self.placeholder} "
             params.append(global_params["limit"])
+
+        if global_params.get("select") is not None:
+            columns = global_params["select"]
+            if self.is_valid_columns(database, query, params, columns):
+                columns = ",".join(f"`{col}`" for col in columns)
+                query = query.replace("SELECT *", f"SELECT {columns}")
+            else:
+                abort(404)
 
         # Trailing space cleanup with semicolon
         if query[-1] == " ":
             query = query[:-1] + ";"
 
         return query, params
+
+    def execute_query(self, database, query, params=[], use_global_params=False):
+        """
+        Arguments
+        ---------
+        cursor: pymysql.cursor
+        query: str
+        params: list or dict
+        """
+        old_query = query
+        old_params = params
+        self.log.info(f"Parsing query with input: {old_query} {old_params}")
+        if use_global_params:
+            query, params = self.parse_global_params(old_query, old_params, database)
+
+        self.log.info(f"Executing query: {query} {params}")
+        cursor = self.get_database(database)
+        cursor.execute(query, params)
+        # except Exception as e:
+        #     print(e, query, params, self.placeholder)
+        #     old_placeholder = self.placeholder
+        #     self.placeholder = next(self.placeholders, None)
+        #     if self.placeholder is None:
+        #         raise e
+
+        result = {"query": f"{query} {params if params else ''}", "data": cursor.fetchall()}
+
+        output_format = request.args.get("output_format", "JSON")
+        response_data = self.format_data(result, output_format)
+        if response_data is None:
+            abort(400)
+        else:
+            return response_data
 
     @staticmethod
     def format_data(data, data_format):

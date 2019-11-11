@@ -1,12 +1,11 @@
 import sys
-from pathlib import Path
 import logging
-from astropy.table import Table
 import yaml
-from flask import Flask, abort, jsonify, redirect, render_template, request, url_for
 from astroapiserver import API, create_auth, ENV
-from auth import authenticate, authorize
-from database_handler import get_database, get_admin_database
+from astropy.table import Table
+from flask import Flask, abort, jsonify, redirect, render_template, request, url_for
+from pathlib import Path
+from database_handler import authenticate, authorize, get_admin_database
 
 PROJECT_PATH = Path(__file__).parents[1].resolve()
 
@@ -19,21 +18,6 @@ api = API(app, authenticate=authenticate, authorize=authorize)
 logging.basicConfig(level=logging.DEBUG)
 logger = app.logger
 
-
-def execute_query(cursor, query, params):
-    cursor.execute(query, params)
-    result = {"query": cursor.mogrify(query, params), "data": cursor.fetchall()}
-
-    output_format = request.args.get('output_format', 'JSON')
-    if output_format == "JSON":
-        return jsonify(result)
-    elif output_format == "ASCII":
-        table = Table(result['data'])
-        return str(table)
-    elif output_format == "CSV":
-        return 'bad'
-    else:
-        abort(400)  # Return 400 BAD REQUEST
 
 ###############
 # META ROUTES #
@@ -56,7 +40,7 @@ def admin_page():
     user_info = api.get_user_info()
 
     with open(PROJECT_PATH / "test/static/swagger.yaml", "r") as f:
-        paths = yaml.safe_load(f)['paths']
+        paths = yaml.safe_load(f)["paths"]
 
     endpoints = set(map(str, app.url_map.iter_rules()))
     endpoints -= {"/", "/login", "/logout"}
@@ -64,7 +48,7 @@ def admin_page():
         "endpoints": endpoints,
         "logged_in": user_info is not None,
         "username": user_info,
-        "paths": paths
+        "paths": paths,
     }
 
     print(paths)
@@ -102,13 +86,8 @@ def logout():
 @app.route("/<database>/sql")
 @api.login_required("admin")
 def get_query(database):
-    db = get_admin_database(database=database)
-
     query = request.args.get("query")
-    db.execute(query)
-
-    result = {"query": db.mogrify(query), "data": db.fetchall()}
-    return jsonify(result)
+    return api.execute_query(database, query)
 
 
 @app.route("/employees/<int:emp_no>")
@@ -134,13 +113,16 @@ def get_employee(emp_no):
     return execute_query(db, query, params)
 
 
-
 @app.route("/salary")
 @api.login_required()
 def get_salary():
 
     db = get_admin_database(database="employees")
-    params = {k: request.args.get(k) for k in ['emp_no', 'from_date'] if request.args.get(k) is not None}
+    params = {
+        k: request.args.get(k)
+        for k in ["emp_no", "from_date"]
+        if request.args.get(k) is not None
+    }
     placeholders = [f"{param}=%({param})s" for param in params]
     print(placeholders)
     query = f"SELECT * FROM salaries {'WHERE ' + ' AND '.join(placeholders) if placeholders else ''} "
