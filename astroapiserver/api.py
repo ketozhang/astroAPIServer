@@ -130,14 +130,15 @@ class API:
         """
         print(query, params)
         if use_global_params:
-            query, global_params = self.parse_global_params(query, params, database)
-            params += global_params
+            query, params = self.parse_global_params(query, params, database)
 
         cursor = self.get_database(database)
         try:
+            print("CURSOR", query, params)
             cursor.execute(query, params)
         except Exception as e:
-            raise Exception(f"{e} \n {cursor.mogrify(query, params)}")
+            print(cursor.mogrify(query, params))
+            raise e
         result = {"query": cursor.mogrify(query, params), "data": cursor.fetchall()}
 
         output_format = request.args.get("output_format", "JSON")
@@ -178,12 +179,10 @@ class API:
         #     "desc": request.args.get("desc"),
         # }
 
-        params = []
         query += " "
 
         if global_params.get("select") is not None:
             columns = global_params["select"]
-
             if self.is_valid_columns(database, query, params, columns):
                 columns = ",".join(f"`{col}`" for col in columns)
                 query = query.replace("SELECT *", f"SELECT {columns}")
@@ -193,7 +192,7 @@ class API:
         if global_params.get("orderby") is not None:
             columns = global_params["orderby"]
 
-            if self.is_valid_columns(database, query, columns):
+            if self.is_valid_columns(database, query, params, columns):
                 columns = ",".join(f"`{col}`" for col in columns)
                 query += f"ORDER BY {columns} "
             else:
