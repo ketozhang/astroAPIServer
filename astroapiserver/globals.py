@@ -15,4 +15,5 @@ try:
         ENV = json.load(f)
 except FileNotFoundError:
     print("`env.json` not found, ENV will not be set")
+    print("ENV PATH", PROJECT_PATH / "env.json")
     ENV = {}

@@ -66,7 +66,7 @@ class API:
         if isinstance(payload, dict) and payload:
             jwt_token = create_auth(payload, config=self.config)
             # Valid authentication, add JWT token to cookie
-            response = make_response(redirect(request.headers.get("Referer")))
+            response = make_response(redirect(request.referrer))
             response.set_cookie("Authentication", jwt_token)
             return response
         else:
@@ -77,7 +77,10 @@ class API:
         Logout via throwing away the JWT token stored in cookie (if exists).
         On success, return redirection to home as response
         """
-        response = make_response(redirect(request.headers.get("Referer")))
+        if request.referrer is not None:
+            response = make_response(redirect(request.referrer))
+        else:
+            response = make_response(redirect(url_for("home_page")))
         response.set_cookie("Authentication", "", expires=0)
         return response
 
@@ -103,13 +106,14 @@ class API:
                 # Check if user is logged in
                 payload = get_payload(config=self.config)
                 if payload is None:
-                    abort(401)
+                    abort(401, "The endpoint requires authentication. You are not logged in.")
 
                 # Check if user is authorized
                 # Valid only if user has at least one of the roles required
                 roles = self.authorize(payload)
+                print(roles, roles_required)
                 if roles_required and set(roles).isdisjoint(roles_required):
-                    abort(401)
+                    abort(401, "The endpoint requires authorization. You do not have the permission.")
                 else:
                     return f(*args, **kwargs)
 
@@ -197,11 +201,17 @@ class API:
 
     def execute_query(self, database, query, params=[], use_global_params=False):
         """
-        Arguments
-        ---------
-        cursor: pymysql.cursor
+        Parameters
+        ----------
+        database: str
         query: str
         params: list or dict
+        use_global_params: bool
+            `True` enables global query parameters.
+
+        Returns
+        -------
+        results: dict
         """
         old_query = query
         old_params = params
@@ -211,7 +221,10 @@ class API:
 
         self.log.info(f"Executing query: {query} {params}")
         cursor = self.get_database(database)
-        cursor.execute(query, params)
+        try:
+            cursor.execute(query, params)
+        except Exception:
+            abort(404)
         # except Exception as e:
         #     print(e, query, params, self.placeholder)
         #     old_placeholder = self.placeholder
