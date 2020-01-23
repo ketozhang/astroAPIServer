@@ -18,7 +18,7 @@ from .authentication import get_payload, create_auth
 
 
 class API:
-    """astroAPIserver API class specification.
+    """astroAPIserver class specification.
 
     Parameters
     ----------
@@ -108,7 +108,7 @@ class API:
 
                 # Check if user is authorized
                 # Valid only if user has at least one of the roles required
-                roles = self.authorize(self.get_user_info())
+                roles = self.authorize(self.get_user_payload())
                 if roles_required and set(roles).isdisjoint(roles_required):
                     abort(
                         401,
@@ -122,15 +122,14 @@ class API:
 
         return decorator
 
-    def get_user_info(self):
+    def get_user_payload(self):
         """
-        Verify the JWT token.
-        If valid return the payload as user info, else empty dict.
+        JWT token and return the user payload if valid other return an empty dict.
         """
         return get_payload(config=self.config)
 
     def is_logged_in(self):
-        return bool(self.get_user_info())
+        return bool(self.get_user_payload())
 
     ################
     # QUERY HANDLING
@@ -265,4 +264,3 @@ class API:
             # return '\n'.join(table.pformat_all(tableid="result-ascii"))
         else:
             return None
-

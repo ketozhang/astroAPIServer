@@ -22,7 +22,7 @@ logger = app.logger
 ###############
 @app.route("/")
 def home_page():
-    user_info = api.get_user_info()
+    user_info = api.get_user_payload()
     if user_info is not None:
         return jsonify(user_info)
     else:
@@ -35,7 +35,7 @@ def admin_page():
     Admin page with OpenAPI tools.
     User may use this to login thus this page is not constrained to only admin.
     """
-    user_info = api.get_user_info()
+    user_info = api.get_user_payload()
 
     with open(PROJECT_PATH / "test/static/swagger.yaml", "r") as f:
         paths = yaml.safe_load(f)["paths"]

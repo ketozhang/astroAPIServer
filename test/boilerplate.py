@@ -8,12 +8,12 @@ PROJECT_PATH = Path(__file__).parent.resolve()
 DATA_PATH = PROJECT_PATH / "data"
 
 
-def get_database(database, user=None):
+##################
+# DATABASE HANDLER
+##################
+def get_database(database):
     db_path = DATA_PATH / f"{database}.db"
-    if user is None:  # use admin user
-        con = sqlite3.connect(db_path)
-    else:
-        con = sqlite3.connect(db_path)
+    con = sqlite3.connect(db_path)
 
     def dict_factory(cursor, row):
         d = {}
@@ -27,13 +27,19 @@ def get_database(database, user=None):
 
 
 def authenticate(username, password):
+    """
+    Returns the user payload (dict) if login is valid else returns False.
+    """
     if username == "test" and password == "test":
-        user_info = {"username": username}
-        return user_info
+        user_payload = {"username": username}
+        return user_payload
     else:
         return False
 
 
+#########################
+# API AND ADMIN INTERFACE
+#########################
 app = Flask(__name__)
 app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY")
 api = API(
@@ -43,7 +49,7 @@ api = API(
 
 @app.route("/")
 def home():
-    context = {"username": api.get_user_info().get("username")}
+    context = {"username": api.get_user_payload.get("username")}
     return render_template("home.html", **context)
 
 
