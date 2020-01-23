@@ -1,3 +1,4 @@
+import os
 import functools
 import pandas as pd
 from flask import (
@@ -44,11 +45,12 @@ class API:
         self.authenticate = kwargs.get("authenticate", lambda *args, **kwargs: True)
         self.authorize = kwargs.get("authorize", lambda *args, **kwargs: [])
         self.placeholder = kwargs.get("query_placeholder", "%s")
+        # TODO Allow to modify these configs from environment
         self.config = {
-            "JWT_SECRET": kwargs.get("jwt_secret", self.app.config["SECRET_KEY"]),
-            "JWT_EXP": None,
-            "JWT_ALGORITHM": "HS256",
-            "LIMIT_DEFAULT": 100
+            "JWT_SECRET": os.environ.get("JWT_SECRET", self.app.config["SECRET_KEY"]),
+            "JWT_EXP": int(os.environ.get("JWT_EXP", 0)),
+            "JWT_ALGORITHM": os.environ.get("JWT_ALGORITHM", "HS256"),
+            "LIMIT_DEFAULT": int(os.environ.get("LIMIT_DEFAULT", 100)),
         }
 
     # Authentication and Authorization
@@ -102,13 +104,19 @@ class API:
                 #         abort(403)
                 # Check if user is logged in
                 if not self.is_logged_in():
-                    abort(401, "The endpoint requires authentication. You are not logged in.")
+                    abort(
+                        401,
+                        "The endpoint requires authentication. You are not logged in.",
+                    )
 
                 # Check if user is authorized
                 # Valid only if user has at least one of the roles required
                 roles = self.authorize(self.get_user_info())
                 if roles_required and set(roles).isdisjoint(roles_required):
-                    abort(401, "The endpoint requires correct authorization. You are logged in but do not have the permission.")
+                    abort(
+                        401,
+                        "The endpoint requires correct authorization. You are logged in but do not have the permission.",
+                    )
                 else:
                     return f(*args, **kwargs)
 
@@ -230,7 +238,10 @@ class API:
         #     if self.placeholder is None:
         #         raise e
 
-        result = {"query": f"{query} {params if params else ''}", "data": cursor.fetchall()}
+        result = {
+            "query": f"{query} {params if params else ''}",
+            "data": cursor.fetchall(),
+        }
 
         output_format = request.args.get("output_format", "JSON")
         response_data = self.format_data(result, output_format)

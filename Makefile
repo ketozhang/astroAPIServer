@@ -14,8 +14,8 @@ boilerplate:
 	FLASK_ENV=development \
 		pipenv run flask run -p 8081 --host=0.0.0.0
 
-wheel:
-	rm -rf *.whl
+.PHONY: dist
+dist:
+	rm -rf dist/
 	python setup.py sdist bdist_wheel
-	mv dist/*.whl .
-	rm -rf dist/ *.egg-info/ build/
+	rm -rf *.egg-info/ build/ 

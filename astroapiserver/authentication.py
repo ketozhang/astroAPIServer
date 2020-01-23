@@ -14,7 +14,7 @@ def create_auth(payload, **kwargs):
     else:
         raise NotImplementedError()
 
-    if jwt_exp is not None:
+    if jwt_exp != 0:
         payload.update(
             {
                 "exp": datetime.utcnow() + timedelta(seconds=jwt_exp),

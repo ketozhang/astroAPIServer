@@ -35,14 +35,15 @@ def authenticate(username, password):
 
 
 app = Flask(__name__)
-app.config["SECRET_KEY"] = os.urandom(16)
-api = API(app, get_database=get_database, authenticate=authenticate, query_placeholder="?")
+app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY")
+api = API(
+    app, get_database=get_database, authenticate=authenticate, query_placeholder="?"
+)
+
 
 @app.route("/")
 def home():
-    context = {
-        "username": api.get_user_info().get("username")
-    }
+    context = {"username": api.get_user_info().get("username")}
     return render_template("home.html", **context)
 
 
@@ -62,12 +63,14 @@ def logout():
     response = api.logout()
     return response
 
+
 @app.route("/planets")
 @api.login_required()
 def get_planets():
     database = "test"
     query = "SELECT * from planets;"
     return api.execute_query(database, query, use_global_params=True)
+
 
 @app.route("/planets/<planet>")
 def get_planet(planet):
