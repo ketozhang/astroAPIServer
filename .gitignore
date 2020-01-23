@@ -1,11 +1,12 @@
-*__pycache__
+*__pycache__/
 *.vscode/
 wiki/
-test/data
+test/data/
 .venv/
+dist/
 
-env.json
-Pipfile.lock
+*.env
 *.code-workspace
 *.whl
 *.egg-info
+Pipfile.lock

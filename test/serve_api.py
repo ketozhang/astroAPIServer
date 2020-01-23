@@ -1,3 +1,4 @@
+import os
 import sys
 import logging
 import yaml
@@ -11,7 +12,7 @@ PROJECT_PATH = Path(__file__).parents[1].resolve()
 
 # Flask App and API
 app = Flask(__name__, template_folder=str(PROJECT_PATH / "test" / "templates"))
-app.secret_key = ENV["SECRET"]
+app.secret_key = os.environ.get("SECRET_KEY")
 api = API(app, authenticate=authenticate, authorize=authorize)
 
 # Logging
@@ -47,7 +48,7 @@ def admin_page():
     context = {
         "endpoints": endpoints,
         "logged_in": bool(user_info),
-        "username": user_info.get('username'),
+        "username": user_info.get("username"),
         "paths": paths,
     }
 
