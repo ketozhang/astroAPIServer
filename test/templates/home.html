@@ -13,6 +13,7 @@ Current User: {{ username }}
 Current User: N/A
 <br>
 <form action="{{API_URL}}/login" method="post">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
     <input type="text" name="username", placeholder="username">
     <br>
     <input type="password" name="password" placeholder="password">

@@ -12,7 +12,6 @@ from flask import (
     url_for,
 )
 from astroapiserver import ENV, API
-from flask_wtf.csrf import generate_csrf, validate_csrf
 
 PROJECT_PATH = Path(__file__).parents[1].resolve()
 API_URL = "http://127.0.0.1:8081"
@@ -23,7 +22,7 @@ app.secret_key = ENV["SECRET"]
 
 @app.context_processor
 def global_var():
-    var = {"API_URL": API_URL, "csrf_token": lambda: generate_csrf()}
+    var = {"API_URL": API_URL, "csrf_token": lambda: os.urandom(64)}
     return var
 
 

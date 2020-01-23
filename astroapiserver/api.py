@@ -12,7 +12,7 @@ from flask import (
     url_for,
 )
 from astropy.table import Table
-from flask_wtf.csrf import CSRFProtect, generate_csrf, validate_csrf, ValidationError
+from flask_wtf.csrf import CSRFProtect, validate_csrf, ValidationError
 from webargs.flaskparser import parser
 from webargs import fields
 from .globals import PROJECT_PATH
@@ -38,6 +38,7 @@ class API:
             if valid else returns an empty list.
         """
         self.app = app
+        self.csrf = CSRFProtect(app)
         self.log = app.logger
         self.get_database = get_database
         self.authenticate = kwargs.get("authenticate", lambda *args, **kwargs: True)
@@ -116,7 +117,7 @@ class API:
         return decorator
 
     def get_user_info(self):
-        """Verify the JWT token. If valid return the payload, else empty dict."""
+        """Verify the JWT token. If valid return the payload as user info, else empty dict."""
         return get_payload(config=self.config)
 
     def is_logged_in(self):

@@ -28,8 +28,8 @@ def get_database(database, user=None):
 
 def authenticate(username, password):
     if username == "test" and password == "test":
-        payload = {"username": username}
-        return payload
+        user_info = {"username": username}
+        return user_info
     else:
         return False
 
@@ -43,7 +43,7 @@ def home():
     context = {
         "username": api.get_user_info().get("username")
     }
-    return render_template("home.html", **context, csrf_token=lambda: "f")
+    return render_template("home.html", **context)
 
 
 @app.route("/login", methods=["POST"])
