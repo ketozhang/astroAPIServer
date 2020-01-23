@@ -18,23 +18,24 @@ from .authentication import get_payload, create_auth
 
 
 class API:
+    """astroAPIserver API class specification.
+
+    Parameters
+    ----------
+    app : flask.Flask
+        Flask application object
+    get_database : function
+        A Cursor constructor function that returns the Cursor of a
+        DB-API 2.0 database connection
+    authenticate : function, optional
+        An authentication function that returns the user payload (dict)
+        if valid else returns False.
+    authorize : function, optional
+        An authorization function that returns the user's role (list)
+        if valid else returns an empty list.
+    """
+
     def __init__(self, app, get_database, **kwargs):
-        """[summary]
-
-        Parameters
-        ----------
-        app : flask.Flask
-            Flask application object
-
-        Keyword Arguments
-        ----------
-        authenticate : function
-            An authentication function that returns the user payload (dict)
-            if valid else returns False.
-        authorize: function
-            An authorization function that returns the user's role (list)
-            if valid else returns an empty list.
-        """
         self.app = app
         self.csrf = CSRFProtect(app)
         self.log = app.logger
@@ -42,7 +43,6 @@ class API:
         self.authenticate = kwargs.get("authenticate", lambda *args, **kwargs: True)
         self.authorize = kwargs.get("authorize", lambda *args, **kwargs: [])
         self.placeholder = kwargs.get("query_placeholder", "%s")
-        # TODO Allow to modify these configs from environment
         self.config = {
             "JWT_SECRET": os.environ.get("JWT_SECRET", self.app.config["SECRET_KEY"]),
             "JWT_EXP": int(os.environ.get("JWT_EXP", 0)),
@@ -112,8 +112,8 @@ class API:
                 if roles_required and set(roles).isdisjoint(roles_required):
                     abort(
                         401,
-                        "The endpoint requires correct authorization." +
-                        "You are logged in but do not have the permission.",
+                        "The endpoint requires correct authorization."
+                        + "You are logged in but do not have the permission.",
                     )
                 else:
                     return f(*args, **kwargs)
@@ -265,3 +265,4 @@ class API:
             # return '\n'.join(table.pformat_all(tableid="result-ascii"))
         else:
             return None
+

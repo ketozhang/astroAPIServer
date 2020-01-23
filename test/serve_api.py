@@ -1,10 +1,8 @@
 import os
-import sys
 import logging
 import yaml
-from astroapiserver import API, create_auth, ENV
-from astropy.table import Table
-from flask import Flask, abort, jsonify, redirect, render_template, request, url_for
+from astroapiserver import API
+from flask import Flask, abort, jsonify, render_template, request
 from pathlib import Path
 from database_handler import authenticate, authorize, get_admin_database
 
@@ -18,7 +16,6 @@ api = API(app, authenticate=authenticate, authorize=authorize)
 # Logging
 logging.basicConfig(level=logging.DEBUG)
 logger = app.logger
-
 
 ###############
 # META ROUTES #
@@ -126,6 +123,10 @@ def get_salary():
     }
     placeholders = [f"{param}=%({param})s" for param in params]
     print(placeholders)
-    query = f"SELECT * FROM salaries {'WHERE ' + ' AND '.join(placeholders) if placeholders else ''} "
+    query = f"""
+            SELECT *
+            FROM salaries
+            {'WHERE ' + ' AND '.join(placeholders) if placeholders else ''}
+            """
     print(query)
     return api.execute_query(db, query, params)
