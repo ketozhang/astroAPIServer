@@ -46,14 +46,14 @@ def admin_page():
     endpoints -= {"/", "/login", "/logout"}
     context = {
         "endpoints": endpoints,
-        "logged_in": user_info is not None,
-        "username": user_info,
+        "logged_in": bool(user_info),
+        "username": user_info.get('username'),
         "paths": paths,
     }
 
     print(paths)
 
-    if user_info is None:
+    if user_info:
         return render_template("login.html")
     else:
         return render_template("admin.html", **context)

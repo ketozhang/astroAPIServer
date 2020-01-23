@@ -6,7 +6,7 @@ with open("README.md", "r") as fh:
 setup(
     name="astroAPIServer",
     description="",
-    version="0.0.1a1",
+    version="2020.1.b1",
     url="http://github.com/ketozhang/astroAPIServer",
     author="Keto Zhang",
     author_email="keto.zhang@gmail.com",
@@ -15,9 +15,12 @@ setup(
     packages=['astroapiserver'],
     python_requires='>=3.3',
     install_requires=[
-        "flask-wtf>=0.14.2",
-        "flask>=1.1.1",
-        "pyjwt>=1.7.1",
-        "pyyaml>=5.1.2",
+        "astropy>=4.0",
+        "flask>=1.1",
+        "flask-wtf>=0.14",
+        "pandas>=0.25",
+        "pyjwt>=1.7",
+        "pyyaml>=5.1",
+        "webargs>5.5",
     ]
 )

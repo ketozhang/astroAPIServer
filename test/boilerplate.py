@@ -4,8 +4,8 @@ from pathlib import Path
 from astroapiserver import API
 from flask import Flask, abort, jsonify, render_template, request
 
-PROJECT_PATH = Path(__file__).parents[1].resolve()
-DATA_PATH = PROJECT_PATH / "test" / "data"
+PROJECT_PATH = Path(__file__).parent.resolve()
+DATA_PATH = PROJECT_PATH / "data"
 
 
 def get_database(database, user=None):
@@ -40,7 +40,10 @@ api = API(app, get_database=get_database, authenticate=authenticate, query_place
 
 @app.route("/")
 def home():
-    return render_template("home.html", csrf_token=lambda: "f")
+    context = {
+        "username": api.get_user_info().get("username")
+    }
+    return render_template("home.html", **context, csrf_token=lambda: "f")
 
 
 @app.route("/login", methods=["POST"])

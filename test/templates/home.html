@@ -21,13 +21,5 @@ Current User: N/A
 </form>
 {% endif %}
 <br>
-<h2>Query Form</h2>
-<form action="{{API_URL}}/query" method="post">
-    <input type="text", name="query", placeholder="SELECT * FROM employees">
-    <br>
-    <input type="submit">
-    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
-</form>
-<br>
-<a href="{{API_URL}}/employees/10001">Employee 10001</a>
+<a href="{{API_URL}}/planets">Planets</a>
 {% endblock %}

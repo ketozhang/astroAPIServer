@@ -1,7 +1,4 @@
-from itertools import cycle
-from io import BytesIO
 import functools
-import json
 import pandas as pd
 from flask import (
     Flask,
@@ -15,7 +12,6 @@ from flask import (
     url_for,
 )
 from astropy.table import Table
-from astropy.io import ascii
 from flask_wtf.csrf import CSRFProtect, generate_csrf, validate_csrf, ValidationError
 from webargs.flaskparser import parser
 from webargs import fields
@@ -95,7 +91,7 @@ class API:
         def decorator(f):
             @functools.wraps(f)
             def wrapper(*args, **kwargs):
-                # Check CSRF
+                # Check CSRF for non-GET request
                 if check_csrf and request.method != "GET":
                     try:
                         self.log.info(f"CSRF: {request.form.get('csrf_token')}")
@@ -104,16 +100,14 @@ class API:
                         self.log.info(e)
                         abort(403)
                 # Check if user is logged in
-                payload = get_payload(config=self.config)
-                if payload is None:
+                if not self.is_logged_in():
                     abort(401, "The endpoint requires authentication. You are not logged in.")
 
                 # Check if user is authorized
                 # Valid only if user has at least one of the roles required
-                roles = self.authorize(payload)
-                print(roles, roles_required)
+                roles = self.authorize(self.get_user_info())
                 if roles_required and set(roles).isdisjoint(roles_required):
-                    abort(401, "The endpoint requires authorization. You do not have the permission.")
+                    abort(401, "The endpoint requires correct authorization. You are logged in but do not have the permission.")
                 else:
                     return f(*args, **kwargs)
 
@@ -122,8 +116,11 @@ class API:
         return decorator
 
     def get_user_info(self):
-        """Verify the JWT token. If valid return the payload, else None"""
+        """Verify the JWT token. If valid return the payload, else empty dict."""
         return get_payload(config=self.config)
+
+    def is_logged_in(self):
+        return bool(self.get_user_info())
 
     ################
     # QUERY HANDLING

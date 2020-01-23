@@ -55,6 +55,6 @@ def get_payload(**kwargs):
     jwt_token = request.cookies.get("Authentication")
     payload = check_auth(jwt_token, return_payload=True, **kwargs)
     if payload is False:
-        return None
+        return {}
     else:
         return payload

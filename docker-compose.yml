@@ -1,0 +1,11 @@
+version: "3"
+services:
+  astroapiserver:
+    build: .
+    command: ["flask", "run", "-p 8080", "--host=0.0.0.0"]
+    image: "astroapi"
+    volumes:
+      - ./test:/app
+      - .:/astroapi
+    ports:
+      - "8080:8080"
