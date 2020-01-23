@@ -111,7 +111,7 @@ def get_employee(emp_no):
     db = get_admin_database(database="employees")
     query = "SELECT * FROM employees where emp_no=%s"
     params = [emp_no]
-    return execute_query(db, query, params)
+    return api.execute_query(db, query, params)
 
 
 @app.route("/salary")
@@ -128,4 +128,4 @@ def get_salary():
     print(placeholders)
     query = f"SELECT * FROM salaries {'WHERE ' + ' AND '.join(placeholders) if placeholders else ''} "
     print(query)
-    return execute_query(db, query, params)
+    return api.execute_query(db, query, params)

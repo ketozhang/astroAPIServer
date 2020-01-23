@@ -2,22 +2,19 @@ import os
 import functools
 import pandas as pd
 from flask import (
-    Flask,
     abort,
     Response,
     make_response,
     jsonify,
     redirect,
-    render_template,
     request,
     url_for,
 )
 from astropy.table import Table
-from flask_wtf.csrf import CSRFProtect, validate_csrf, ValidationError
+from flask_wtf.csrf import CSRFProtect
 from webargs.flaskparser import parser
 from webargs import fields
-from .globals import PROJECT_PATH
-from .authentication import get_payload, create_auth, check_auth
+from .authentication import get_payload, create_auth
 
 
 class API:
@@ -115,7 +112,8 @@ class API:
                 if roles_required and set(roles).isdisjoint(roles_required):
                     abort(
                         401,
-                        "The endpoint requires correct authorization. You are logged in but do not have the permission.",
+                        "The endpoint requires correct authorization." +
+                        "You are logged in but do not have the permission.",
                     )
                 else:
                     return f(*args, **kwargs)
@@ -125,7 +123,10 @@ class API:
         return decorator
 
     def get_user_info(self):
-        """Verify the JWT token. If valid return the payload as user info, else empty dict."""
+        """
+        Verify the JWT token.
+        If valid return the payload as user info, else empty dict.
+        """
         return get_payload(config=self.config)
 
     def is_logged_in(self):
