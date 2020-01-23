@@ -93,13 +93,13 @@ class API:
             @functools.wraps(f)
             def wrapper(*args, **kwargs):
                 # Check CSRF for non-GET request
-                if check_csrf and request.method != "GET":
-                    try:
-                        self.log.info(f"CSRF: {request.form.get('csrf_token')}")
-                        validate_csrf(request.form.get("csrf_token"))
-                    except ValidationError as e:
-                        self.log.info(e)
-                        abort(403)
+                # if check_csrf and request.method != "GET":
+                #     try:
+                #         self.log.info(f"CSRF: {request.form.get('csrf_token')}")
+                #         validate_csrf(request.form.get("csrf_token"))
+                #     except ValidationError as e:
+                #         self.log.info(e)
+                #         abort(403)
                 # Check if user is logged in
                 if not self.is_logged_in():
                     abort(401, "The endpoint requires authentication. You are not logged in.")
