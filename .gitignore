@@ -1,7 +1,6 @@
 *__pycache__/
 *.vscode/
 wiki/
-test/data/
 .venv/
 dist/
 
