@@ -56,12 +56,23 @@ class API:
     @property
     def openapi(self):
         openapi_path = self.config["OPENAPI_PATH"]
+        _warning = """
+            OpenAPI specification not found. If exists,
+            make sure to add it to the environment variable `OPENAPI_PATH`
+            astroapiserver.API::openapi will return None.
+            Admin console will exclude the endpoint table.
+            """
+
         if openapi_path is None:
+            self.log.warn(_warning)
             return None
 
-        with open(Path.cwd() / openapi_path, "r") as f:
-            openapi = yaml.safe_load(f)
-        return openapi
+        try:
+            with open(Path.cwd() / openapi_path, "r") as f:
+                return yaml.safe_load(f)
+        except FileNotFoundError:
+            self.log.warn(_warning)
+            return None
 
     # Authentication and Authorization
 

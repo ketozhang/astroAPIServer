@@ -93,6 +93,8 @@
 
       <!-- Content -->
       <div class="col-12 col-md-8 pt-3 pr-2">
+
+        <!-- Global Query Parameters -->
         <div id="global-query-parameters">
           <h2> Global Query Parameters </h2>
           <p><code class="text-muted">/api/path/to/endpoint?{param1}={value1}&{param2}={value2}</code></p>
@@ -135,6 +137,8 @@
             </tbody>
           </table>
         </div>
+
+        {% if openapi %}
         <div id="api-endpoints">
           <h2> API Endpoints</h2>
           <small class="text-muted float-right"><code>*</code> required, &#128274; private</small>
@@ -218,6 +222,7 @@
             </tbody>
           </table>
         </div>
+        {% endif %}
         <div>
           <h3>References</h3>
           <ol>
