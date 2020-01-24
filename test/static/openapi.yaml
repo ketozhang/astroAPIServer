@@ -1,0 +1,83 @@
+openapi: 3.0.0
+info:
+  title: Sample API
+  version: 0.0.1
+
+
+paths:
+  /sql:
+    description: Query using SQL
+    get:
+      parameters:
+        - name: query
+          in: path
+          required: true
+          description: SQL query
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  columns:
+                    description: table dependent
+
+  /{database}/{table}:
+    description: Query any database's table
+    get:
+      parameters:
+        - name: "{globals}"
+          in: path
+          description: Any global query parameters
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  columns:
+                    description: table dependent
+
+
+  /planets/:
+    description: Get all planets
+    get:
+      parameters:
+        - name: "{globals}"
+          in: path
+          description: Any global query parameters
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  distance:
+                    type: float
+                  name:
+                    type: str
+
+  /planets/{planet}:
+    description: Get a specific planet.
+    get:
+      parameters:
+        - name: "{globals}"
+          in: path
+          description: Any global query parameters
+        - name: "planet"
+          in: path
+          description: Planet name
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  distance:
+                    type: float
+                  name:
+                    type: str

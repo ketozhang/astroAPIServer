@@ -161,19 +161,21 @@
             </tr>
           </thead>
           <tbody>
-            {% for path in paths %}
+            {% set endpoints = openapi['paths'] %}
+            {% for endpoint in endpoints %}
             <!-- Header Row -->
             <tr>
-              <!-- Path -->
+              <!-- Endpoint -->
               <th scope="row">
-                <div><a href="javascript:pathToForm('{{ path }}');" class="api-path"><code>{{ path }}</code></a></div>
+                <div><a href="javascript:pathToForm('{{ endpoint }}');" class="api-path"><code>{{ endpoint }}</code></a>
+                </div>
                 <small class="text-muted">
-                  {{paths[path]['summary']}}
+                  {{endpoints[endpoint]['summary']}}
                 </small>
               </th>
               <!-- Parameter -->
               <td scope="row">
-                {% for params in paths[path]['get']['parameters']%}
+                {% for params in endpoints[endpoint]['get']['parameters']%}
                 {% if params['description'] %}
                 <a href="javascript:void(0);" class="tooltip-parent" data-toggle="tooltip" data-placement="right"
                   title="{{params['description']}}">
@@ -187,7 +189,7 @@
                 {% endfor %}
               </td>
 
-              {% set fields = paths[path]['get']['responses']['200']['content']['application/json']['schema']['properties'] %}
+              {% set fields = endpoints[endpoint]['get']['responses']['200']['content']['application/json']['schema']['properties'] %}
 
               <!-- Response -->
               <!-- <td>

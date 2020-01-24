@@ -1,6 +1,7 @@
 import os
 import functools
 import pandas as pd
+import yaml
 from flask import (
     abort,
     Response,
@@ -12,6 +13,7 @@ from flask import (
 )
 from astropy.table import Table
 from flask_wtf.csrf import CSRFProtect
+from pathlib import Path
 from webargs.flaskparser import parser
 from webargs import fields
 from .authentication import get_payload, create_auth
@@ -48,7 +50,18 @@ class API:
             "JWT_EXP": int(os.environ.get("JWT_EXP", 0)),
             "JWT_ALGORITHM": os.environ.get("JWT_ALGORITHM", "HS256"),
             "LIMIT_DEFAULT": int(os.environ.get("LIMIT_DEFAULT", 100)),
+            "OPENAPI_PATH": os.environ.get("OPENAPI_PATH", None),
         }
+
+    @property
+    def openapi(self):
+        openapi_path = self.config["OPENAPI_PATH"]
+        if openapi_path is None:
+            return None
+
+        with open(Path.cwd() / openapi_path, "r") as f:
+            openapi = yaml.safe_load(f)
+        return openapi
 
     # Authentication and Authorization
 
