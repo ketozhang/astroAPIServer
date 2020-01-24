@@ -12,209 +12,273 @@
 
 <body>
   <header>
-    <nav class="container-fluid navbar navbar-light border-bottom">
-      <a class="navbar-brand" href="#">AstroAPIServer Admin</a>
-      <!-- <button type="button" id="toggle-css" onclick="toggleCSS()">Toggle CSS</button> -->
-    </nav>
-    <!-- <script>
-      function toggleCSS() {
-        let attr = $('#bootstrap').attr('disabled');
+    <nav class="navbar navbar-light navbar-expand-lg border-bottom">
+      <a class="navbar-brand" href="{{ url_for('admin_page') }}">AstroAPIServer Admin</a>
+      <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
+        aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <form id="form-logout" class="form-inline ml-auto" action="{{ url_for('logout') }}" method="post">
+        <button class="btn btn-outline-primary" type="submit">Logout</button>
+      </form>
 
-        if (typeof attr !== typeof undefined && attr !== false) {
-          $('#bootstrap').removeAttr('disabled');
-        } else {
-          $('#bootstrap').attr('disabled', 'disabled')
-        }
-      }
-    </script> -->
+      <!-- <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      {% if is_logged_in %}
+
+      {% else %}
+      {% endif %}
+    </div> -->
+    </nav>
   </header>
   <main class="container-fluid">
     <div class="row">
       <!-- Sidenav -->
-      <div id="sidenav" class="col-12 col-md-4 text-light order-sm-1">
-        <!-- Output Formats -->
-        <div class="my-5">
-          <form id="api-form">
+      <div id="sidenav" class="col-12 col-md-4 text-light order-1">
+        <div class="sidenav-body sticky-top">
+          <!-- Output Formats -->
+          <form id="api-form" class="mb-2">
             <div class="form-group">
               <!-- TODO: Change placeholder to start with /api -->
-              <label for="api-form-url">API endpoint</label>
-              <textarea id="api-form-url" class="form-control" rows=3
-                placeholder="/salary?from_date=2000-01-01"></textarea>
+              <label for="api-form-url">API endpoint <button type="button" class="btn btn-copy btn-outline-light btn-sm"
+                  data-target="#api-form-url">Copy</button></label>
+              <textarea id="api-form-url" class="form-control" rows=3>{{ request.url_root }}</textarea>
             </div>
             <div class="form-group">
-              <!-- <div class="form-check form-check-inline">
-                  <input id="output-json" class="form-check-input" type="radio" name="output_format" value="JSON"
-                    checked>
-                  <label class="form-check-label" for="output-json">JSON</label>
-                </div>
-                <div class="form-check form-check-inline">
-                  <input id="output-ascii" class="form-check-input" type="radio" name="output_format" value="ASCII">
-                  <label class="form-check-label" for="output-ascii">ASCII</label>
-                </div>
-                <div class="form-check form-check-inline">
-                  <input id="output-csv" class="form-check-input" type="radio" name="output_format" value="CSV">
-                  <label class="form-check-label" for="output-csv">CSV</label>
-                </div> -->
-
-              <!-- Output Format buttons -->
               <div class="form-row mb-2">
                 <span class="col-3 col-lg-4 align-text-bottom">
                   <label for="output-format" class="align-text-bottom">Output format</label>
                 </span>
                 <div class="col">
-                  <select id="output-format" class="form-control" name="output_format" required>
+                  <select id="output-format" class="form-control" name="output_format" selected="JSON" required>
                     <option value="JSON" selected>JSON</option>
                     <option value="ASCII">ASCII</option>
                     <option value="CSV">CSV</option>
                   </select>
                 </div>
               </div>
-
-              <!-- Submit Buttons -->
-              <div class="form-row mb-2">
-                <span class="col-3 col-lg-4 align-text-bottom">
-                  <label for="print-method" class="align-text-bottom">Print as</label>
-                </span>
-                <div class="col">
-                  <select id="print-method" class="form-control" name="print_method" required>
-                    <option value="inline" selected>Inline</option>
-                    <option value="newtab">New Tab</option>
-                    <!-- <option value="save">Save</option> -->
-                  </select>
-                </div>
+            </div>
+            <div class="form-row mb-2">
+              <span class="col-3 col-lg-4 align-text-bottom">
+                <label for="print-method" class="align-text-bottom">Print as</label>
+              </span>
+              <div class="col">
+                <select id="print-method" class="form-control" name="print_method" required>
+                  <option value="inline" selected>Inline</option>
+                  <option value="newtab">New Tab</option>
+                  <!-- <option value="save">Save</option> -->
+                </select>
               </div>
             </div>
-
-            <!-- <div class="row">
-              <div class="col">
-                <button id="api-button-save" class="btn btn-info btn-block">Save</button>
-              </div>
-              <div class="col">
-                <button id="api-button-inline" class="btn btn-info btn-block">Inline</button>
-              </div>
-              <div class="col">
-                <button id="api-button-newtab" class="btn btn-info btn-block">New Tab</button>
-              </div>
-            </div> -->
-            <div style="height: 1px;">
+            <!-- Submit Buttons -->
+            <div class="form-group" style="height: 35PX;">
               <button id="#submit" type="submit" class="btn btn-light float-right">Submit</button>
             </div>
           </form>
-        </div>
-        <div id="result" class="card text-dark">
-          <div class="card-header lead">Output</div>
-          <div class="card-body">
-            <pre id="result-code" class="m-0">
-            </pre>
+          <div id="result" class="card text-dark mb-2">
+            <div class="card-header lead">Output</div>
+            <div class="card-body">
+              <pre id="result-code" class="m-0">
+              </pre>
+            </div>
+          </div>
+          <div id="history" class="card text-dark">
+            <div class="card-header lead">History</div>
+            <div class="card-body">
+              <div id="history-links">
+              </div>
+            </div>
           </div>
         </div>
       </div>
 
+      <!-- Content -->
       <div class="col-12 col-md-8 pt-3 pr-2">
-        <h2> Global Query Parameters </h2>
-        <p><code class="text-muted">/api/path/to/endpoint?{param1}={value1}&{param2}={value2}</code></p>
-        <table class="table table-hover table-sm">
-          <thead>
-            <tr>
-              <th>Parameter</th>
-              <th>Type</th>
-              <th>Description</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <th scope="row"><code>select</code></th>
-              <td><code class="text-muted">str</code></td>
-              <td>Limit the output to only a certain set of columns.</td>
-            </tr>
-            <tr>
-              <th scope="row"><code>limit</code></th>
-              <td><code class="text-muted">int</code></td>
-              <td>Limit the output to only a certain set of rows.</td>
-            </tr>
-            <tr>
-              <th scope="row"><code>orderby</code></th>
-              <td><code class="text-muted">str</code></td>
-              <td>Order the output by a column or ordered set of columns.</td>
-            </tr>
-            <tr>
-              <th scope="row"><code>desc</code></th>
-              <td><code class="text-muted">bool</code></td>
-              <td>Order of the output is descending by default. Set to <code>False</code> for ascending order.</td>
-            </tr>
-            <tr>
-              <th scope="row"><code>format</code> <small class="text-black-50">(required)</small></th>
-              <td><code class="text-muted">str</code></td>
-              <td>Output can be formatted as either JSON (default), ASCII, or CSV.</td>
-            </tr>
-          </tbody>
-        </table>
-        <h2> API Endpoints </h2>
-        <small class="text-muted float-right"><code>*</code>required</small>
-        <!-- Endpoint Table -->
-        <table class="table table-sm">
-          <thead>
-            <tr>
-              <th style="min-width: 200px;">Path</th>
-              <th>Parameters</th>
-              <!-- <th>Response</th> -->
-            </tr>
-          </thead>
-          <tbody>
-            {% set endpoints = openapi['paths'] %}
-            {% for endpoint in endpoints %}
-            <!-- Header Row -->
-            <tr>
-              <!-- Endpoint -->
-              <th scope="row">
-                <div><a href="javascript:pathToForm('{{ endpoint }}');" class="api-path"><code>{{ endpoint }}</code></a>
-                </div>
-                <small class="text-muted">
-                  {{endpoints[endpoint]['summary']}}
-                </small>
-              </th>
-              <!-- Parameter -->
-              <td scope="row">
-                {% for params in endpoints[endpoint]['get']['parameters']%}
-                {% if params['description'] %}
-                <a href="javascript:void(0);" class="tooltip-parent" data-toggle="tooltip" data-placement="right"
-                  title="{{params['description']}}">
+        <div id="global-query-parameters">
+          <h2> Global Query Parameters </h2>
+          <p><code class="text-muted">/api/path/to/endpoint?{param1}={value1}&{param2}={value2}</code></p>
+          <table class="table table-hover table-sm">
+            <thead>
+              <tr>
+                <th scope="col">Parameter</th>
+                <th scope="col">Type<sup><a href="#footnote-openapi">1</a></sup></th>
+                <th scope="col">Description</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <th scope="row"><code>select</code></th>
+                <td><code class="text-muted">string</code></td>
+                <td>Limit the output to only a certain set of columns. (Default: all)</td>
+              </tr>
+              <tr>
+                <th scope="row"><code>limit</code></th>
+                <td><code class="text-muted">integer</code></td>
+                <td>Limit the output to only a certain set of rows. (Default: <code>100</code>)</td>
+              </tr>
+              <tr>
+                <th scope="row"><code>orderby</code></th>
+                <td><code class="text-muted">string</code></td>
+                <td>Order the output by a column or comma-delimited list of columns. (Default: unordered)</td>
+              </tr>
+              <tr>
+                <th scope="row"><code>desc</code></th>
+                <td><code class="text-muted">boolean</code></td>
+                <td>Order of the output. Set to <code>false</code> for ascending order.
+                  (Default: <code>false</code>, descending)</td>
+              </tr>
+              <tr>
+                <th scope="row"><code>output_format</code><br><code class="text-muted">format</code></th>
+                <td><code class="text-muted">string</code></td>
+                <td>Output can be formatted as either <code>JSON</code>, <code>ASCII</code>, or <code>CSV</code>.
+                  (Default: <code>JSON</code>)</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div id="api-endpoints">
+          <h2> API Endpoints</h2>
+          <small class="text-muted float-right"><code>*</code> required, &#128274; private</small>
+          <!-- Endpoint Table -->
+          <table class="table table-sm">
+            <thead>
+              <tr>
+                <th scope="col" style="min-width: 200px;">Path</th>
+                <th scope="col" style="min-width: 200px;">Parameters</th>
+                <!-- <th>Response</th> -->
+              </tr>
+            </thead>
+            <tbody>
+              {% set endpoints = openapi['paths'] %}
+              {% for endpoint in endpoints %}
+              <tr class="collapser-row" data-target="#collapse-{{ loop.index}}">
+                <!-- Endpoint -->
+                <th scope="row">
+                  {% set security=endpoints[endpoint]['get'].get('security') %}
+                  {% if security %}
+                  {% set roles=security[0]['cookieAuth']|join(', ') %}
+                  <div><a href="javascript:pathToForm('{{ endpoint }}');" class="api-path"><code>{{ endpoint }}</code>
+                      <small class="tooltip-parent" data-toggle="tooltip" data-placement="right"
+                        title="mininum role required: {{ roles if roles else 'any'}}">&#128274;</small></a></div>
+                  {% else %}
+                  <div><a href="javascript:pathToForm('{{ endpoint }}');"
+                      class="api-path"><code>{{ endpoint }}</code></a></div>
+                  {% endif %}
+                  <small class="text-muted">
+                    {{endpoints[endpoint]['summary']}}
+                  </small>
+                </th>
+                <!-- Parameter -->
+                <td scope="row">
+                  {% for params in endpoints[endpoint]['get']['parameters']%}
+                  {% if params['description'] %}
+                  <a href="javascript:void(0);" class="tooltip-parent" data-toggle="tooltip" data-placement="right"
+                    title="{{params['description']}}">
+                    <code>{{params['name']}}{% if params['required'] %}*{% endif %}</code>
+                  </a>
+
+                  {% else %}
                   <code>{{params['name']}}{% if params['required'] %}*{% endif %}</code>
-                </a>
+                  {% endif %}
+                  <br>
+                  {% endfor %}
+                </td>
 
-                {% else %}
-                <code>{{params['name']}}{% if params['required'] %}*{% endif %}</code>
-                {% endif %}
-                <br>
-                {% endfor %}
-              </td>
-
-              {% set fields = endpoints[endpoint]['get']['responses']['200']['content']['application/json']['schema']['properties'] %}
-
-              <!-- Response -->
-              <!-- <td>
-                {% for field, meta in fields.items() %}
-                <div class="row">
-                  <div class="col">
-                    <code>{{field}}</code>
+              </tr>
+              <!-- Collapsed More Info -->
+              <tr class="collapse-row" data-target="#collapse-{{ loop.index}}">
+                <td colspan=3>
+                  <div id="collapse-{{ loop.index }}" class="collapse">
+                    <div class="pl-2 collapse-wrapper">
+                      {% if endpoints[endpoint]['description'] %}<p class="description">
+                        {{endpoints[endpoint]['description']}}
+                      </p>
+                      {% endif %}
+                      <!-- 200 Response -->
+                      {% set fields = endpoints[endpoint]['get']['responses']['200']['content']['application/json']['schema']['properties'] %}
+                      <table class="table table-sm table-striped 200-response w-50" style="min-width: 250px;">
+                        <thead>
+                          <tr>
+                            <th class="text-success" colspan=2>200 Response</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {% for field, meta in fields.items() %}
+                          <tr>
+                            <td><code>{{field}}</code><br><small>{{meta['description']}}</small></td>
+                            <td><code class="type">{{meta['type']}}</code><br></td>
+                          </tr>
+                          {% endfor %}
+                        </tbody>
+                      </table>
+                    </div>
                   </div>
-                  <div class="col">
-                    <code class="type">{{meta['type']}}</code> <small>{{meta['description']}}</small><br>
-                  </div>
-                </div>
-                {% endfor %}
-              </td> -->
-            </tr>
-            {% endfor %}
-          </tbody>
-        </table>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        <div>
+          <h3>References</h3>
+          <ol>
+            <li id="footenote-openapi" class="text-muted"><a target="_blank"
+                href="https://swagger.io/docs/specification/about/">OpenAPI Specification</a></li>
+            <li id="footenote-dali" class="text-muted"><a target="_blank"
+                href="http://www.ivoa.net/documents/DALI/">IVOA Data Access Layer Inteface</a></li>
+          </ol>
+        </div>
       </div>
     </div>
-    <button id="back-to-top" type="button"><a>&#x21A5;<br><small>TOP</small></a></button>
   </main>
 
   {% block script %}
   <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+  <script>
+    API_URL = "{{ request.url_root }}"
+
+    function pathToForm(path) {
+      var endpoint;
+      if (path.includes(API_URL)) {
+        endpoint = path;
+      } else {
+        endpoint = `${API_URL}${path.slice(1)}`;
+      }
+
+      $("#api-form-url").val(endpoint);
+      $("#api-form-url").text(endpoint);
+      $("#api-form-url").focus();
+    };
+
+    $(".collapser-row").click(function () {
+      // Accordion behavior
+      $(".collapse").collapse('hide');
+
+      target = $(this).data("target");
+      $(target).collapse('toggle');
+    });
+
+  </script>
+  <script>
+    console.log('hi')
+    $(".btn-copy").click(function () {
+      if ($(this).data("href") !== undefined) {
+        value = $(this).data("href");
+      } else if ($(this).data("target") !== undefined) {
+        target = $(this).data("target");
+        value = $(target).text()
+      } else {
+        return false;
+      }
+
+      var $temp = $("<input>");
+      $("body").append($temp);
+      $temp.val(value).select();
+      document.execCommand("copy");
+      $temp.remove();
+    });
+  </script>
   <script src="{{request.url_root}}static/admin.js"></script>
   {% endblock %}
 </body>

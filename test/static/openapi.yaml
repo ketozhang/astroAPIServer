@@ -3,11 +3,22 @@ info:
   title: Sample API
   version: 0.0.1
 
+  # Security
+# https://swagger.io/docs/specification/authentication/
+# https://swagger.io/specification/#securitySchemeObject
+components:
+securitySchemes:
+  cookieAuth:
+    type: apiKey
+    in: cookie
+    name: Authentication
 
 paths:
   /sql:
     description: Query using SQL
     get:
+      security:
+        - cookieAuth: []
       parameters:
         - name: query
           in: path
@@ -26,6 +37,8 @@ paths:
   /{database}/{table}:
     description: Query any database's table
     get:
+      security:
+        - cookieAuth: []
       parameters:
         - name: "{globals}"
           in: path
@@ -44,6 +57,8 @@ paths:
   /planets/:
     description: Get all planets
     get:
+      security:
+        - cookieAuth: []
       parameters:
         - name: "{globals}"
           in: path
