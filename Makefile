@@ -17,5 +17,6 @@ boilerplate:
 .PHONY: dist
 dist:
 	rm -rf dist/
-	python setup.py sdist bdist_wheel
-	rm -rf *.egg-info/ build/ 
+	# python setup.py sdist bdist_wheel
+	# rm -rf *.egg-info/ build/ 
+	poetry build
