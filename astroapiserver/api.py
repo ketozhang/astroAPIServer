@@ -87,7 +87,7 @@ class API:
             jwt_token = create_auth(payload, config=self.config)
             # Valid authentication, add JWT token to cookie
             response = make_response(redirect(request.referrer))
-            response.set_cookie("Authentication", jwt_token)
+            response.set_cookie("Authentication", jwt_token, httponly=True)
             return response
         else:
             return False
