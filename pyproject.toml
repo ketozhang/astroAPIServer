@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "astroapiserver"
-version = "2020.1b3"
+version = "2020.1b4"
 description = ""
 authors = ["Keto Zhang <keto.zhang@gmail.com>"]
 license = "Apache-2.0"

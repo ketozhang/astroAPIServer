@@ -12,7 +12,6 @@ from flask import (
     url_for,
 )
 from astropy.table import Table
-from flask_wtf.csrf import CSRFProtect
 from pathlib import Path
 from webargs.flaskparser import parser
 from webargs import fields
@@ -39,7 +38,7 @@ class API:
 
     def __init__(self, app, get_database, **kwargs):
         self.app = app
-        self.csrf = CSRFProtect(app)
+        self.app.config["JSON_SORT_KEYS"] = os.environ.get("JSON_SORT_KEYS", False)
         self.log = app.logger
         self.get_database = get_database
         self.authenticate = kwargs.get("authenticate", lambda *args, **kwargs: True)
@@ -87,7 +86,9 @@ class API:
             jwt_token = create_auth(payload, config=self.config)
             # Valid authentication, add JWT token to cookie
             response = make_response(redirect(request.referrer))
-            response.set_cookie("Authentication", jwt_token, httponly=True)
+            response.set_cookie(
+                "Authentication", jwt_token, httponly=True, samesite="lax"
+            )
             return response
         else:
             return False
@@ -104,7 +105,7 @@ class API:
         response.set_cookie("Authentication", "", expires=0)
         return response
 
-    def login_required(self, *args, check_csrf=True):
+    def login_required(self, *args):
         """
         Decorator append to function that requires a logged-in user.
         Login status is checked via confirming the JWT token stored
@@ -115,14 +116,6 @@ class API:
         def decorator(f):
             @functools.wraps(f)
             def wrapper(*args, **kwargs):
-                # Check CSRF for non-GET request
-                # if check_csrf and request.method != "GET":
-                #     try:
-                #         self.log.info(f"CSRF: {request.form.get('csrf_token')}")
-                #         validate_csrf(request.form.get("csrf_token"))
-                #     except ValidationError as e:
-                #         self.log.info(e)
-                #         abort(403)
                 # Check if user is logged in
                 if not self.is_logged_in():
                     abort(

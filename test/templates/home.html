@@ -5,7 +5,6 @@
 Current User: {{ username }}
 <br>
 <form action="{{API_URL}}/logout" method="post">
-    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
     <input type="submit" value="Logout">
 </form>
 
@@ -13,8 +12,7 @@ Current User: {{ username }}
 Current User: N/A
 <br>
 <form action="{{API_URL}}/login" method="post">
-    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
-    <input type="text" name="username", placeholder="username">
+    <input type="text" name="username" , placeholder="username">
     <br>
     <input type="password" name="password" placeholder="password">
     <br>
